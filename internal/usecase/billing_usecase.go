@@ -35,12 +35,18 @@ func (b *billingUsecase) ExportFeeStatement(ctx context.Context, req domain.Expo
 	}()
 
 	var studentName string
+	var studentAlias string
 	var internalUUID string
-	err = tx.QueryRow(ctx, `SELECT id, name FROM student_fee_core.students WHERE student_id = $1 OR id::text = $1`, req.StudentID).
-		Scan(&internalUUID, &studentName)
+	err = tx.QueryRow(ctx, `SELECT id, name, COALESCE(alias, '') FROM student_fee_core.students WHERE student_id = $1 OR id::text = $1`, req.StudentID).
+		Scan(&internalUUID, &studentName, &studentAlias)
 	if err != nil {
 		middleware.LogEvent(404, "billing_usecase", "Student not found for ID: "+req.StudentID)
 		return nil, nil, fmt.Errorf("student record not found for ID: %s", req.StudentID)
+	}
+
+	nickname := studentAlias
+	if nickname == "" {
+		nickname = req.StudentID
 	}
 
 	var totalDays int
@@ -64,7 +70,7 @@ func (b *billingUsecase) ExportFeeStatement(ctx context.Context, req domain.Expo
 		return nil, nil, fmt.Errorf("failed to record fee statement audit: %w", err)
 	}
 
-	excelBytes, err := generateExcelSheet(studentName, req.StudentID, req.BillingStartDate, req.BillingEndDate, totalDays, req.FeePerSession, totalFee)
+	excelBytes, err := generateExcelSheet(studentName, nickname, req.BillingStartDate, req.BillingEndDate, totalDays, req.FeePerSession, totalFee)
 	if err != nil {
 		middleware.LogEvent(500, "billing_usecase", "Excelize compilation failed: "+err.Error())
 		return nil, nil, fmt.Errorf("failed to compile excel document: %w", err)
@@ -90,7 +96,7 @@ func (b *billingUsecase) ExportFeeStatement(ctx context.Context, req domain.Expo
 	return excelBytes, statement, nil
 }
 
-func generateExcelSheet(studentName, studentID, startDate, endDate string, totalDays int, feePerSession, totalFee float64) ([]byte, error) {
+func generateExcelSheet(studentName, nickname, startDate, endDate string, totalDays int, feePerSession, totalFee float64) ([]byte, error) {
 	f := excelize.NewFile()
 	defer f.Close()
 
@@ -100,8 +106,8 @@ func generateExcelSheet(studentName, studentID, startDate, endDate string, total
 	_ = f.SetCellValue(sheet, "A1", "STUDENT FEE STATEMENT")
 	_ = f.SetCellValue(sheet, "A3", "Student Name:")
 	_ = f.SetCellValue(sheet, "B3", studentName)
-	_ = f.SetCellValue(sheet, "A4", "Student ID:")
-	_ = f.SetCellValue(sheet, "B4", studentID)
+	_ = f.SetCellValue(sheet, "A4", "Nickname:")
+	_ = f.SetCellValue(sheet, "B4", nickname)
 	_ = f.SetCellValue(sheet, "A5", "Billing Period:")
 	_ = f.SetCellValue(sheet, "B5", fmt.Sprintf("%s to %s", startDate, endDate))
 
