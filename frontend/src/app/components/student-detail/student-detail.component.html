@@ -7,7 +7,7 @@
   <aside class="clay-card sidebar">
     <div>
       <button (click)="goBack()" class="clay-btn back-btn">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> Back to Roster
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> Quay lại Danh sách
       </button>
 
       @if (student()) {
@@ -16,9 +16,9 @@
             {{ student()?.name?.charAt(0) }}
           </div>
           <h2 class="profile-name">{{ student()?.name }}</h2>
-          <p class="profile-alias">Alias: {{ student()?.alias || student()?.student_id }}</p>
+          <p class="profile-alias">Biệt danh: {{ student()?.alias || student()?.student_id }}</p>
           <span [class]="'badge-' + student()?.status" class="status-badge">
-            {{ student()?.status | titlecase }}
+            {{ getStatusLabel(student()?.status) }}
           </span>
         </div>
       }
@@ -26,14 +26,14 @@
       <div class="nav-container">
         <div class="clay-nav-item-active nav-item">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-          Attendance Tracker
+          Theo dõi Điểm danh
         </div>
       </div>
     </div>
 
     <div>
       <button (click)="showFeeModal.set(true)" class="clay-btn export-btn">
-        Generate Fee Export
+        Xuất Báo cáo Học phí
       </button>
     </div>
   </aside>
@@ -44,8 +44,8 @@
     <!-- Header -->
     <div class="clay-card header-card">
       <div>
-        <h2 class="header-title">Attendance Calendar</h2>
-        <p class="header-subtitle">Click any tile to toggle attendance day status</p>
+        <h2 class="header-title">Lịch Điểm danh</h2>
+        <p class="header-subtitle">Nhấp vào ô ngày bất kỳ để thay đổi trạng thái điểm danh học sinh</p>
       </div>
 
       <div class="month-controls">
@@ -58,14 +58,14 @@
     <!-- 2-Column Summary Metrics -->
     <div class="summary-grid">
       <div class="clay-card metric-card">
-        <p class="metric-title">Attended Sessions</p>
+        <p class="metric-title">Số buổi đi học</p>
         <h3 class="metric-value value-primary">
-          {{ attendanceService.totalAttendedDays() }} days
+          {{ attendanceService.totalAttendedDays() }} buổi
         </h3>
       </div>
 
       <div class="clay-card metric-card">
-        <p class="metric-title">Attendance Rate</p>
+        <p class="metric-title">Tỷ lệ đi học</p>
         <h3 class="metric-value value-success">
           {{ attendanceRate() }}%
         </h3>
@@ -75,7 +75,7 @@
     <!-- Calendar Grid -->
     <div class="clay-card calendar-card">
       <div class="weekdays-grid">
-        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+        <div>CN</div><div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div>
       </div>
 
       <div class="days-grid">
@@ -96,9 +96,9 @@
             
             <div class="cell-status">
               @if (day.isAttended) {
-                <span class="status-attended">Attended</span>
+                <span class="status-attended">Đi học</span>
               } @else {
-                <span class="status-off">Off</span>
+                <span class="status-off">Nghỉ</span>
               }
             </div>
           </div>
@@ -112,7 +112,8 @@
 @if (showFeeModal() && student()) {
   <app-fee-modal 
     [student]="student()!"
-    [attendedDays]="attendanceService.totalAttendedDays()"
+    [initialMonth]="month()"
+    [initialYear]="year()"
     (close)="showFeeModal.set(false)"
   ></app-fee-modal>
 }

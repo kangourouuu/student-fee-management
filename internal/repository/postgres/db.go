@@ -23,12 +23,14 @@ CREATE TABLE IF NOT EXISTS student_fee_core.students (
     name VARCHAR(255) NOT NULL,
     alias VARCHAR(100),
     phone VARCHAR(255),
+    fee_per_session NUMERIC(10, 2) DEFAULT 0.00 CHECK (fee_per_session >= 0),
     status student_fee_core.student_status DEFAULT 'enrolled' NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 ALTER TABLE student_fee_core.students ADD COLUMN IF NOT EXISTS alias VARCHAR(100);
+ALTER TABLE student_fee_core.students ADD COLUMN IF NOT EXISTS fee_per_session NUMERIC(10, 2) DEFAULT 0.00 CHECK (fee_per_session >= 0);
 
 CREATE TABLE IF NOT EXISTS student_fee_core.attendance_records (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -44,11 +46,12 @@ CREATE TABLE IF NOT EXISTS student_fee_core.fee_statements (
     student_id UUID NOT NULL REFERENCES student_fee_core.students(id) ON DELETE CASCADE,
     billing_start_date DATE NOT NULL,
     billing_end_date DATE NOT NULL,
-    fee_per_session NUMERIC(10, 2) NOT NULL CHECK (fee_per_session >= 0),
     total_days INT NOT NULL CHECK (total_days >= 0),
     total_fee NUMERIC(10, 2) NOT NULL CHECK (total_fee >= 0),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE student_fee_core.fee_statements DROP COLUMN IF EXISTS fee_per_session;
 `
 
 func InitDB(ctx context.Context, dbURL string) (*pgxpool.Pool, error) {

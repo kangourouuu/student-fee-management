@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+
 	"student-fee-management/internal/delivery/http/middleware"
 	"student-fee-management/internal/delivery/http/response"
 	"student-fee-management/internal/domain"
@@ -33,11 +35,12 @@ func (h *StudentHandler) GetStudents(w http.ResponseWriter, r *http.Request) {
 }
 
 type CreateStudentRequest struct {
-	StudentID string               `json:"student_id,omitempty"`
-	Name      string               `json:"name"`
-	Alias     string               `json:"alias"`
-	Phone     string               `json:"phone"`
-	Status    domain.StudentStatus `json:"status"`
+	StudentID     string               `json:"student_id,omitempty"`
+	Name          string               `json:"name"`
+	Alias         string               `json:"alias"`
+	Phone         string               `json:"phone"`
+	FeePerSession float64              `json:"fee_per_session"`
+	Status        domain.StudentStatus `json:"status"`
 }
 
 func (h *StudentHandler) CreateStudent(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +67,7 @@ func (h *StudentHandler) CreateStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	student, err := h.studentUsecase.CreateStudent(r.Context(), req.StudentID, req.Name, req.Alias, req.Phone, req.Status)
+	student, err := h.studentUsecase.CreateStudent(r.Context(), req.StudentID, req.Name, req.Alias, req.Phone, req.FeePerSession, req.Status)
 	if err != nil {
 		middleware.LogEvent(http.StatusInternalServerError, "student_handler", "Failed to create student: "+err.Error())
 		response.Error(w, http.StatusInternalServerError, "Failed to register student")
@@ -73,6 +76,52 @@ func (h *StudentHandler) CreateStudent(w http.ResponseWriter, r *http.Request) {
 
 	middleware.LogEvent(http.StatusCreated, "student_handler", "Registered new student: "+student.StudentID)
 	response.Success(w, http.StatusCreated, map[string]interface{}{
+		"student": student,
+	})
+}
+
+type UpdateStudentRequest struct {
+	ID            string               `json:"id"`
+	StudentID     string               `json:"student_id"`
+	Name          string               `json:"name"`
+	Alias         string               `json:"alias"`
+	Phone         string               `json:"phone"`
+	FeePerSession float64              `json:"fee_per_session"`
+	Status        domain.StudentStatus `json:"status"`
+}
+
+func (h *StudentHandler) UpdateStudent(w http.ResponseWriter, r *http.Request) {
+	studentIDParam := chi.URLParam(r, "id")
+	var req UpdateStudentRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		middleware.LogEvent(http.StatusBadRequest, "student_handler", "Invalid payload: "+err.Error())
+		response.Error(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	targetID := studentIDParam
+	if targetID == "" {
+		targetID = req.StudentID
+	}
+	if targetID == "" {
+		targetID = req.ID
+	}
+
+	if targetID == "" {
+		middleware.LogEvent(http.StatusBadRequest, "student_handler", "Missing student identifier")
+		response.Error(w, http.StatusBadRequest, "Student identifier is required")
+		return
+	}
+
+	student, err := h.studentUsecase.UpdateStudent(r.Context(), targetID, req.Name, req.Alias, req.Phone, req.FeePerSession, req.Status)
+	if err != nil {
+		middleware.LogEvent(http.StatusInternalServerError, "student_handler", "Failed to update student: "+err.Error())
+		response.Error(w, http.StatusInternalServerError, "Failed to update student details")
+		return
+	}
+
+	middleware.LogEvent(http.StatusOK, "student_handler", "Updated student details: "+student.StudentID)
+	response.Success(w, http.StatusOK, map[string]interface{}{
 		"student": student,
 	})
 }

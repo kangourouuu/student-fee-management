@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 
 :root {
   --bg-color: #eef2f5;
@@ -8,7 +8,7 @@
   --text-muted: #5c5f61;
   --error-color: #ba1a1a;
   --error-bg: #ffdad6;
-  --font-family: 'Hanken Grotesk', 'Inter', sans-serif;
+  --font-family: 'Be Vietnam Pro', sans-serif;
 }
 
 * {
@@ -37,6 +37,7 @@ body {
 }
 
 .clay-btn {
+  font-family: var(--font-family);
   background: #eef2f5;
   border-radius: 2rem;
   box-shadow: 8px 8px 16px rgba(209, 217, 230, 0.8), 
@@ -92,6 +93,7 @@ body {
 }
 
 .neumorphic-inset {
+  font-family: var(--font-family);
   background: rgba(238, 242, 245, 0.6);
   box-shadow: inset 6px 6px 12px #d1d9e0, inset -6px -6px 12px #ffffff;
   backdrop-filter: blur(12px);
@@ -102,6 +104,7 @@ body {
 }
 
 .neumorphic-button {
+  font-family: var(--font-family);
   background: #b3e5fc;
   box-shadow: 6px 6px 12px #9ecae0, -6px -6px 12px #c8ffff;
   border: 1px solid rgba(255, 255, 255, 0.6);
@@ -130,12 +133,14 @@ body {
 }
 
 .neu-inset {
+  font-family: var(--font-family);
   background: #eef2f5;
   box-shadow: inset 8px 8px 16px #cad0d3, inset -8px -8px 16px #ffffff;
   border-radius: 1.2rem;
 }
 
 .neu-button {
+  font-family: var(--font-family);
   background: #e0f2fe;
   box-shadow: 6px 6px 12px #b0c2cc, -6px -6px 12px #ffffff;
   border-radius: 1rem;

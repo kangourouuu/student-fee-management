@@ -18,7 +18,20 @@ export class DashboardComponent implements OnInit {
   newName = '';
   newAlias = '';
   newPhone = '';
+  newFee = 0;
   newStatus: StudentStatus = 'enrolled';
+
+  // Edit Modal State
+  showEditModal = signal<boolean>(false);
+  editStudentData: Student = {
+    id: '',
+    student_id: '',
+    name: '',
+    alias: '',
+    phone: '',
+    fee_per_session: 0,
+    status: 'enrolled'
+  };
 
   constructor(
     public studentService: StudentService,
@@ -32,12 +45,36 @@ export class DashboardComponent implements OnInit {
 
   saveStudent() {
     if (!this.newName) return;
-    this.studentService.createStudent('', this.newName, this.newAlias, this.newPhone, this.newStatus).subscribe(() => {
+    this.studentService.createStudent('', this.newName, this.newAlias, this.newPhone, this.newFee, this.newStatus).subscribe(() => {
       this.showNewModal.set(false);
       this.newName = '';
       this.newAlias = '';
       this.newPhone = '';
+      this.newFee = 0;
     });
+  }
+
+  openEditModal(event: Event, student: Student) {
+    event.stopPropagation();
+    this.editStudentData = { ...student };
+    this.showEditModal.set(true);
+  }
+
+  updateStudent() {
+    if (!this.editStudentData.name) return;
+    this.studentService.updateStudent(this.editStudentData).subscribe(() => {
+      this.showEditModal.set(false);
+    });
+  }
+
+  getStatusLabel(status: StudentStatus): string {
+    switch (status) {
+      case 'enrolled': return 'Đang học';
+      case 'inactive': return 'Nghỉ học';
+      case 'graduated': return 'Tốt nghiệp';
+      case 'suspended': return 'Tạm dừng';
+      default: return status;
+    }
   }
 
   openStudentDetail(student: Student) {

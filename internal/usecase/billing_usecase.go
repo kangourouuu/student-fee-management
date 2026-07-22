@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/xuri/excelize/v2"
@@ -49,28 +51,43 @@ func (b *billingUsecase) ExportFeeStatement(ctx context.Context, req domain.Expo
 		nickname = req.StudentID
 	}
 
-	var totalDays int
-	countQuery := `SELECT COUNT(*) FROM student_fee_core.attendance_records
-	               WHERE student_id = $1 AND record_date >= $2::date AND record_date <= $3::date AND is_present = TRUE`
-	err = tx.QueryRow(ctx, countQuery, internalUUID, req.BillingStartDate, req.BillingEndDate).Scan(&totalDays)
+	// Query list of attended dates
+	datesQuery := `SELECT record_date FROM student_fee_core.attendance_records
+	               WHERE student_id = $1 AND record_date >= $2::date AND record_date <= $3::date AND is_present = TRUE
+	               ORDER BY record_date ASC`
+	rows, err := tx.Query(ctx, datesQuery, internalUUID, req.BillingStartDate, req.BillingEndDate)
 	if err != nil {
-		middleware.LogEvent(500, "billing_usecase", "Failed to query attendance count: "+err.Error())
-		return nil, nil, fmt.Errorf("failed to compute attendance days: %w", err)
+		middleware.LogEvent(500, "billing_usecase", "Failed to query attendance dates: "+err.Error())
+		return nil, nil, fmt.Errorf("failed to query attendance dates: %w", err)
+	}
+	defer rows.Close()
+
+	var dateStrs []string
+	for rows.Next() {
+		var d time.Time
+		if err := rows.Scan(&d); err == nil {
+			dateStrs = append(dateStrs, fmt.Sprintf("%02d", d.Day()))
+		}
+	}
+	totalDays := len(dateStrs)
+	attendedDatesFormatted := strings.Join(dateStrs, ", ")
+	if attendedDatesFormatted == "" {
+		attendedDatesFormatted = "Không có buổi học nào"
 	}
 
 	totalFee := float64(totalDays) * req.FeePerSession
 
 	var statementID string
-	insertStmt := `INSERT INTO student_fee_core.fee_statements (student_id, billing_start_date, billing_end_date, fee_per_session, total_days, total_fee)
-	               VALUES ($1, $2::date, $3::date, $4, $5, $6)
+	insertStmt := `INSERT INTO student_fee_core.fee_statements (student_id, billing_start_date, billing_end_date, total_days, total_fee)
+	               VALUES ($1, $2::date, $3::date, $4, $5)
 	               RETURNING id`
-	err = tx.QueryRow(ctx, insertStmt, internalUUID, req.BillingStartDate, req.BillingEndDate, req.FeePerSession, totalDays, totalFee).Scan(&statementID)
+	err = tx.QueryRow(ctx, insertStmt, internalUUID, req.BillingStartDate, req.BillingEndDate, totalDays, totalFee).Scan(&statementID)
 	if err != nil {
 		middleware.LogEvent(500, "billing_usecase", "Failed to insert audit statement: "+err.Error())
 		return nil, nil, fmt.Errorf("failed to record fee statement audit: %w", err)
 	}
 
-	excelBytes, err := generateExcelSheet(studentName, nickname, req.BillingStartDate, req.BillingEndDate, totalDays, req.FeePerSession, totalFee)
+	excelBytes, err := generateExcelSheet(studentName, nickname, req.BillingStartDate, req.BillingEndDate, attendedDatesFormatted, totalDays, totalFee)
 	if err != nil {
 		middleware.LogEvent(500, "billing_usecase", "Excelize compilation failed: "+err.Error())
 		return nil, nil, fmt.Errorf("failed to compile excel document: %w", err)
@@ -96,29 +113,29 @@ func (b *billingUsecase) ExportFeeStatement(ctx context.Context, req domain.Expo
 	return excelBytes, statement, nil
 }
 
-func generateExcelSheet(studentName, nickname, startDate, endDate string, totalDays int, feePerSession, totalFee float64) ([]byte, error) {
+func generateExcelSheet(studentName, nickname, startDate, endDate, attendedDates string, totalDays int, totalFee float64) ([]byte, error) {
 	f := excelize.NewFile()
 	defer f.Close()
 
-	sheet := "Fee Statement"
+	sheet := "Báo Cáo Học Phí"
 	f.SetSheetName("Sheet1", sheet)
 
-	_ = f.SetCellValue(sheet, "A1", "STUDENT FEE STATEMENT")
-	_ = f.SetCellValue(sheet, "A3", "Student Name:")
+	_ = f.SetCellValue(sheet, "A1", "BÁO CÁO HỌC PHÍ HỌC SINH")
+	_ = f.SetCellValue(sheet, "A3", "Họ và tên:")
 	_ = f.SetCellValue(sheet, "B3", studentName)
-	_ = f.SetCellValue(sheet, "A4", "Nickname:")
+	_ = f.SetCellValue(sheet, "A4", "Biệt danh:")
 	_ = f.SetCellValue(sheet, "B4", nickname)
-	_ = f.SetCellValue(sheet, "A5", "Billing Period:")
-	_ = f.SetCellValue(sheet, "B5", fmt.Sprintf("%s to %s", startDate, endDate))
+	_ = f.SetCellValue(sheet, "A5", "Kỳ thanh toán:")
+	_ = f.SetCellValue(sheet, "B5", fmt.Sprintf("%s đến %s", startDate, endDate))
 
-	_ = f.SetCellValue(sheet, "A7", "Item Description")
-	_ = f.SetCellValue(sheet, "B7", "Value")
+	_ = f.SetCellValue(sheet, "A7", "Mục thanh toán")
+	_ = f.SetCellValue(sheet, "B7", "Chi tiết")
 
-	_ = f.SetCellValue(sheet, "A8", "Total Attended Days")
-	_ = f.SetCellValue(sheet, "B8", totalDays)
-	_ = f.SetCellValue(sheet, "A9", "Fee Per Session")
-	_ = f.SetCellValue(sheet, "B9", feePerSession)
-	_ = f.SetCellValue(sheet, "A10", "Total Calculated Fee")
+	_ = f.SetCellValue(sheet, "A8", "Các ngày đi học")
+	_ = f.SetCellValue(sheet, "B8", attendedDates)
+	_ = f.SetCellValue(sheet, "A9", "Tổng số buổi học")
+	_ = f.SetCellValue(sheet, "B9", fmt.Sprintf("%d buổi", totalDays))
+	_ = f.SetCellValue(sheet, "A10", "Tổng học phí thanh toán")
 	_ = f.SetCellValue(sheet, "B10", totalFee)
 
 	var buf bytes.Buffer

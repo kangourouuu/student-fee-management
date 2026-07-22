@@ -96,6 +96,17 @@
   font-size: 0.9rem;
 }
 
+.note-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  outline: none;
+  font-size: 0.9rem;
+  resize: vertical;
+  color: #1e293b;
+  font-family: inherit;
+}
+
 .calc-panel {
   padding: 1.25rem;
   margin-bottom: 1.5rem;
@@ -115,17 +126,30 @@
   font-weight: 700;
 }
 
-.calc-label {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-top: 0.25rem;
-}
-
 .total-fee-val {
   font-size: 1.75rem;
   font-weight: 800;
   color: #0284c7;
+}
+
+.chips-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  max-height: 100px;
+  overflow-y: auto;
+  padding-top: 0.2rem;
+}
+
+.day-chip {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  padding: 0.2rem 0.55rem;
+  border-radius: 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .qr-panel {

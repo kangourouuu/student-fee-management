@@ -1,7 +1,8 @@
-import { Component, Input, Output, EventEmitter, OnInit, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BillingService } from '../../services/billing.service';
+import { AttendanceService } from '../../services/attendance.service';
 import { Student } from '../../models/student.model';
 import { QR_CODE_BASE64 } from '../../constants/qr-code.constant';
 
@@ -14,29 +15,87 @@ import { QR_CODE_BASE64 } from '../../constants/qr-code.constant';
 })
 export class FeeModalComponent implements OnInit {
   @Input({ required: true }) student!: Student;
-  @Input({ required: true }) attendedDays: number = 0;
+  @Input() initialMonth?: number;
+  @Input() initialYear?: number;
   @Output() close = new EventEmitter<void>();
 
   qrCodeImage = QR_CODE_BASE64;
-  feePerSession = signal<number>(25);
-  startDate = '';
-  endDate = '';
+  
+  selectedMonth = 7;
+  selectedYear = 2026;
+  teacherNote = '';
 
-  totalFee = computed(() => {
-    return this.attendedDays * (this.feePerSession() || 0);
+  private monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+
+  get feePerSession(): number {
+    return this.student.fee_per_session || 0;
+  }
+
+  attendedDayChips = computed(() => {
+    const map = this.attendanceService.attendanceMap();
+    const m = Number(this.selectedMonth);
+    const y = Number(this.selectedYear);
+    const mStr = m < 10 ? `0${m}` : `${m}`;
+    const prefix = `${y}-${mStr}-`;
+
+    const dates = Object.keys(map)
+      .filter(k => k.startsWith(prefix) && map[k])
+      .sort();
+
+    return dates.map(d => {
+      const parts = d.split('-');
+      return parts.length === 3 ? `${parts[2]}/${parts[1]}` : d;
+    });
   });
 
-  constructor(private billingService: BillingService) {}
+  attendedDaysCount = computed(() => {
+    return this.attendedDayChips().length;
+  });
+
+  totalFee = computed(() => {
+    return this.attendedDaysCount() * this.feePerSession;
+  });
+
+  constructor(
+    private billingService: BillingService,
+    private attendanceService: AttendanceService
+  ) {}
 
   ngOnInit() {
     const today = new Date();
-    const y = today.getFullYear();
-    const m = today.getMonth() + 1;
-    const monthStr = m < 10 ? `0${m}` : `${m}`;
-    const dayStr = today.getDate() < 10 ? `0${today.getDate()}` : `${today.getDate()}`;
+    this.selectedMonth = this.initialMonth || (today.getMonth() + 1);
+    this.selectedYear = this.initialYear || today.getFullYear();
 
-    this.startDate = `${y}-${monthStr}-01`;
-    this.endDate = `${y}-${monthStr}-${dayStr}`;
+    this.onMonthChange();
+  }
+
+  onMonthChange() {
+    const m = Number(this.selectedMonth);
+    const y = Number(this.selectedYear);
+    const mStr = m < 10 ? `0${m}` : `${m}`;
+
+    this.attendanceService.fetchAttendance(this.student.student_id, `${y}-${mStr}`).subscribe();
+  }
+
+  get startDate(): string {
+    const m = Number(this.selectedMonth);
+    const y = Number(this.selectedYear);
+    const mStr = m < 10 ? `0${m}` : `${m}`;
+    return `${y}-${mStr}-01`;
+  }
+
+  get endDate(): string {
+    const m = Number(this.selectedMonth);
+    const y = Number(this.selectedYear);
+    const mStr = m < 10 ? `0${m}` : `${m}`;
+    const lastDay = new Date(y, m, 0).getDate();
+    const lastDayStr = lastDay < 10 ? `0${lastDay}` : `${lastDay}`;
+    return `${y}-${mStr}-${lastDayStr}`;
+  }
+
+  get monthYearLabel(): string {
+    const m = Number(this.selectedMonth);
+    return `${this.monthNames[m - 1]} năm ${this.selectedYear}`;
   }
 
   onExport() {
@@ -44,12 +103,12 @@ export class FeeModalComponent implements OnInit {
       student_id: this.student.student_id,
       billing_start_date: this.startDate,
       billing_end_date: this.endDate,
-      fee_per_session: this.feePerSession()
+      fee_per_session: this.feePerSession
     }).subscribe((blob) => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Fee_Statement_${this.student.alias || this.student.student_id}_${this.startDate}.xlsx`;
+      a.download = `Bao_Cao_Hoc_Phi_${this.student.alias || this.student.student_id}_Thang_${this.selectedMonth}_${this.selectedYear}.xlsx`;
       a.click();
       window.URL.revokeObjectURL(url);
       this.close.emit();
@@ -57,17 +116,25 @@ export class FeeModalComponent implements OnInit {
   }
 
   onExportPNG() {
-    // High DPI 2x Scale Canvas for crisp vector-quality PNG output
+    const chips = this.attendedDayChips();
+    const chipW = 55;
+    const chipH = 26;
+    const gap = 8;
+    const numRows = chips.length === 0 ? 1 : Math.ceil(chips.length / 7);
+    const chipsHeight = numRows * (chipH + gap);
+
+    // Dynamic Summary Container Height to fit chips exactly
+    const summaryBoxHeight = 35 + chipsHeight + 80;
+    const canvasHeight = Math.max(920, 225 + summaryBoxHeight + 75 + 248 + 120);
+
     const scale = 2;
     const canvas = document.createElement('canvas');
     canvas.width = 600 * scale;
-    canvas.height = 760 * scale;
+    canvas.height = canvasHeight * scale;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     ctx.scale(scale, scale);
-
-    // Disable image smoothing for sharp, crisp pixel lines
     ctx.imageSmoothingEnabled = false;
     (ctx as any).webkitImageSmoothingEnabled = false;
     (ctx as any).mozImageSmoothingEnabled = false;
@@ -75,21 +142,21 @@ export class FeeModalComponent implements OnInit {
 
     // Outer Background
     ctx.fillStyle = '#eef2f5';
-    ctx.fillRect(0, 0, 600, 760);
+    ctx.fillRect(0, 0, 600, canvasHeight);
 
     // Card Surface
     ctx.fillStyle = '#ffffff';
     if (typeof (ctx as any).roundRect === 'function') {
-      (ctx as any).roundRect(30, 30, 540, 700, 20);
+      (ctx as any).roundRect(30, 30, 540, canvasHeight - 60, 20);
       ctx.fill();
     } else {
-      ctx.fillRect(30, 30, 540, 700);
+      ctx.fillRect(30, 30, 540, canvasHeight - 60);
     }
 
     // Title
     ctx.fillStyle = '#0284c7';
-    ctx.font = 'bold 24px sans-serif';
-    ctx.fillText('STUDENT FEE STATEMENT', 60, 80);
+    ctx.font = 'bold 24px "Be Vietnam Pro", sans-serif';
+    ctx.fillText('BÁO CÁO HỌC PHÍ HỌC SINH', 60, 80);
 
     // Divider Line
     ctx.strokeStyle = '#e2e8f0';
@@ -101,58 +168,122 @@ export class FeeModalComponent implements OnInit {
 
     // Fields
     ctx.fillStyle = '#475569';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillText('Student Name:', 60, 140);
+    ctx.font = 'bold 15px "Be Vietnam Pro", sans-serif';
+    ctx.fillText('Họ và tên:', 60, 135);
     ctx.fillStyle = '#1e293b';
-    ctx.fillText(this.student.name, 230, 140);
+    ctx.fillText(this.student.name, 220, 135);
 
     ctx.fillStyle = '#475569';
-    ctx.fillText('Nickname:', 60, 175);
+    ctx.fillText('Biệt danh:', 60, 168);
     ctx.fillStyle = '#1e293b';
-    ctx.fillText(this.student.alias || 'N/A', 230, 175);
+    ctx.fillText(this.student.alias || 'N/A', 220, 168);
 
     ctx.fillStyle = '#475569';
-    ctx.fillText('Billing Period:', 60, 210);
-    ctx.fillStyle = '#1e293b';
-    ctx.fillText(`${this.startDate} to ${this.endDate}`, 230, 210);
+    ctx.fillText('Tháng thanh toán:', 60, 201);
+    ctx.fillStyle = '#0284c7';
+    ctx.fillText(this.monthYearLabel, 220, 201);
 
-    // Summary Box
+    // Summary & Attended Day Chips Container Box (Dynamic Height)
+    const summaryBoxY = 225;
     ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(60, 240, 480, 150);
+    ctx.fillRect(60, summaryBoxY, 480, summaryBoxHeight);
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(60, summaryBoxY, 480, summaryBoxHeight);
+
+    // Attended Days Title
+    ctx.fillStyle = '#475569';
+    ctx.font = 'bold 14px "Be Vietnam Pro", sans-serif';
+    ctx.fillText('Các ngày đi học:', 75, summaryBoxY + 25);
+
+    // Render DD/MM Border Chips
+    let currentX = 75;
+    let currentY = summaryBoxY + 35;
+    const maxX = 520;
+
+    ctx.font = 'bold 13px "Be Vietnam Pro", sans-serif';
+    if (chips.length === 0) {
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '13px "Be Vietnam Pro", sans-serif';
+      ctx.fillText('Chưa có ngày nào', 75, currentY + 18);
+    } else {
+      for (let i = 0; i < chips.length; i++) {
+        if (currentX + chipW > maxX) {
+          currentX = 75;
+          currentY += chipH + gap;
+        }
+
+        ctx.fillStyle = '#e0f2fe';
+        if (typeof (ctx as any).roundRect === 'function') {
+          ctx.beginPath();
+          (ctx as any).roundRect(currentX, currentY, chipW, chipH, 6);
+          ctx.fill();
+          ctx.strokeStyle = '#bae6fd';
+          ctx.stroke();
+        } else {
+          ctx.fillRect(currentX, currentY, chipW, chipH);
+        }
+
+        ctx.fillStyle = '#0369a1';
+        ctx.textAlign = 'center';
+        ctx.fillText(chips[i], currentX + chipW / 2, currentY + 18);
+        currentX += chipW + gap;
+      }
+    }
+
+    ctx.textAlign = 'left';
+
+    // Summary Values (Positioned dynamically below chips)
+    const summaryTextY = summaryBoxY + 35 + chipsHeight + 20;
 
     ctx.fillStyle = '#475569';
-    ctx.font = '16px sans-serif';
-    ctx.fillText('Attended Days:', 80, 275);
+    ctx.font = '15px "Be Vietnam Pro", sans-serif';
+    ctx.fillText('Tổng số buổi học:', 75, summaryTextY);
     ctx.fillStyle = '#1e293b';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillText(`${this.attendedDays} days`, 360, 275);
-
-    ctx.fillStyle = '#475569';
-    ctx.font = '16px sans-serif';
-    ctx.fillText('Fee Per Session:', 80, 315);
-    ctx.fillStyle = '#1e293b';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillText(`${this.feePerSession()}`, 360, 315);
+    ctx.font = 'bold 15px "Be Vietnam Pro", sans-serif';
+    ctx.fillText(`${this.attendedDaysCount()} buổi`, 360, summaryTextY);
 
     ctx.fillStyle = '#0284c7';
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillText('Total Calculated Fee:', 80, 360);
-    ctx.fillText(`${this.totalFee()}`, 360, 360);
+    ctx.font = 'bold 16px "Be Vietnam Pro", sans-serif';
+    ctx.fillText('Tổng học phí thanh toán:', 75, summaryTextY + 30);
+    ctx.fillText(`${this.totalFee()}`, 360, summaryTextY + 30);
 
-    // Scan to Pay label
+    // Teacher Feedback Note Box (Positioned dynamically below summary box)
+    const noteBoxY = summaryBoxY + summaryBoxHeight + 20;
+    ctx.fillStyle = '#fffbeb';
+    ctx.fillRect(60, noteBoxY, 480, 75);
+    ctx.strokeStyle = '#fef3c7';
+    ctx.strokeRect(60, noteBoxY, 480, 75);
+
+    ctx.fillStyle = '#92400e';
+    ctx.font = 'bold 13px "Be Vietnam Pro", sans-serif';
+    ctx.fillText('Nhận xét của Giáo viên:', 75, noteBoxY + 22);
+
+    ctx.fillStyle = '#78350f';
+    ctx.font = '13px "Be Vietnam Pro", sans-serif';
+    const noteText = this.teacherNote || 'Chưa có ghi chú thêm.';
+    if (noteText.length > 55) {
+      ctx.fillText(noteText.substring(0, 55), 75, noteBoxY + 44);
+      ctx.fillText(noteText.substring(55, 110), 75, noteBoxY + 62);
+    } else {
+      ctx.fillText(noteText, 75, noteBoxY + 48);
+    }
+
+    // Scan to Pay label (Positioned dynamically below teacher note box)
+    const qrTitleY = noteBoxY + 75 + 30;
     ctx.fillStyle = '#0369a1';
-    ctx.font = 'bold 16px sans-serif';
+    ctx.font = 'bold 15px "Be Vietnam Pro", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Scan to Pay', 300, 420);
+    ctx.fillText('Quét mã thanh toán', 300, qrTitleY);
 
-    // High-resolution Crisp QR Image Draw matching 942x1296 aspect ratio
+    const qrImgY = qrTitleY + 15;
     const img = new Image();
     img.onload = () => {
-      ctx.drawImage(img, 210, 435, 180, 248);
+      ctx.drawImage(img, 210, qrImgY, 180, 248);
       const dataUrl = canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `Fee_Statement_${this.student.alias || this.student.student_id}_${this.startDate}.png`;
+      a.download = `Bao_Cao_Hoc_Phi_${this.student.alias || this.student.student_id}_Thang_${this.selectedMonth}_${this.selectedYear}.png`;
       a.click();
     };
 
@@ -160,7 +291,7 @@ export class FeeModalComponent implements OnInit {
       const dataUrl = canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `Fee_Statement_${this.student.alias || this.student.student_id}_${this.startDate}.png`;
+      a.download = `Bao_Cao_Hoc_Phi_${this.student.alias || this.student.student_id}_Thang_${this.selectedMonth}_${this.selectedYear}.png`;
       a.click();
     };
 

@@ -9,19 +9,19 @@
       <div class="brand-header">
         <div class="brand-badge">SF</div>
         <div>
-          <h3 class="brand-title">Fee Center</h3>
-          <p class="brand-subtitle">Management Portal</p>
+          <h3 class="brand-title">Quản lý Học phí</h3>
+          <p class="brand-subtitle">Cổng Thông tin Học sinh</p>
         </div>
       </div>
 
       <nav class="nav-list">
         <div class="clay-nav-item-active nav-item">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-          Student Roster
+          Danh sách Học sinh
         </div>
         <div class="nav-item-inactive nav-item" (click)="showNewModal.set(true)">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
-          New Registration
+          Thêm học sinh mới
         </div>
       </nav>
     </div>
@@ -29,7 +29,7 @@
     <div>
       <button (click)="logout()" class="neumorphic-logout logout-btn">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-        Logout
+        Đăng xuất
       </button>
     </div>
   </aside>
@@ -40,13 +40,13 @@
     <!-- Header Row -->
     <header class="header-row">
       <div>
-        <h1 class="header-title">Student Roster</h1>
-        <p class="header-subtitle">Manage active student enrollments and fee schedules</p>
+        <h1 class="header-title">Danh sách Học sinh</h1>
+        <p class="header-subtitle">Quản lý thông tin học sinh, điểm danh và học phí hàng tháng</p>
       </div>
 
       <button (click)="showNewModal.set(true)" class="neumorphic-button add-btn">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
-        Add New Student
+        Thêm học sinh mới
       </button>
     </header>
 
@@ -56,7 +56,7 @@
         <input 
           type="text" 
           class="neumorphic-inset search-input" 
-          placeholder="Search by student name, alias or phone..."
+          placeholder="Tìm kiếm theo tên, biệt danh hoặc số điện thoại..."
           [ngModel]="studentService.searchQuery()"
           (ngModelChange)="studentService.searchQuery.set($event)"
         />
@@ -66,17 +66,17 @@
       </div>
 
       <div class="filter-box">
-        <label class="filter-label">Academic Status:</label>
+        <label class="filter-label">Trạng thái:</label>
         <select 
           class="neumorphic-inset filter-select"
           [ngModel]="studentService.statusFilter()"
           (ngModelChange)="studentService.statusFilter.set($event)"
         >
-          <option value="all">All Statuses</option>
-          <option value="enrolled">Enrolled</option>
-          <option value="inactive">Inactive</option>
-          <option value="graduated">Graduated</option>
-          <option value="suspended">Suspended</option>
+          <option value="all">Tất cả trạng thái</option>
+          <option value="enrolled">Đang học</option>
+          <option value="inactive">Nghỉ học</option>
+          <option value="graduated">Tốt nghiệp</option>
+          <option value="suspended">Tạm dừng</option>
         </select>
       </div>
     </div>
@@ -85,8 +85,8 @@
     <div class="roster-list">
       @if (studentService.filteredStudents().length === 0) {
         <div class="neumorphic empty-state">
-          <p class="empty-title">No student records registered yet</p>
-          <p class="empty-subtitle">Click "Add New Student" above to register your first student.</p>
+          <p class="empty-title">Chưa có dữ liệu học sinh nào</p>
+          <p class="empty-subtitle">Nhấn "Thêm học sinh mới" ở trên để đăng ký học sinh đầu tiên.</p>
         </div>
       }
 
@@ -101,14 +101,18 @@
             </div>
             <div>
               <h4 class="student-name">{{ student.name }}</h4>
-              <p class="student-meta">Alias: <span class="meta-highlight">{{ student.alias || student.student_id }}</span> | Phone: {{ student.phone || 'N/A' }}</p>
+              <p class="student-meta">Biệt danh: <span class="meta-highlight">{{ student.alias || student.student_id }}</span> | SĐT: {{ student.phone || 'N/A' }} | Học phí: <span class="meta-highlight">{{ student.fee_per_session || 0 }}</span>/buổi</p>
             </div>
           </div>
 
           <div class="student-status-action">
             <span [class]="'badge-' + student.status">
-              {{ student.status | titlecase }}
+              {{ getStatusLabel(student.status) }}
             </span>
+
+            <button class="clay-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" (click)="openEditModal($event, student)">
+              Sửa
+            </button>
 
             <div class="action-arrow">
               <svg width="18" height="18" fill="none" stroke="#475569" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
@@ -120,41 +124,92 @@
   </main>
 </div>
 
-<!-- Registration Modal -->
+<!-- New Registration Modal -->
 @if (showNewModal()) {
   <div class="modal-backdrop">
     <div class="neu-flat modal-card">
-      <h3 class="modal-title">Register New Student</h3>
+      <h3 class="modal-title">Thêm Học sinh mới</h3>
       
       <form (ngSubmit)="saveStudent()">
         <div class="form-group">
-          <label class="form-label">Full Name</label>
-          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="newName" name="name" placeholder="e.g. Alex Johnson" required />
+          <label class="form-label">Họ và tên</label>
+          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="newName" name="name" placeholder="Ví dụ: Nguyễn Văn A" required />
         </div>
 
         <div class="form-group">
-          <label class="form-label">Alias / Nickname</label>
-          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="newAlias" name="alias" placeholder="e.g. Johnny" />
+          <label class="form-label">Biệt danh / Tên gọi</label>
+          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="newAlias" name="alias" placeholder="Ví dụ: BiBi" />
         </div>
 
         <div class="form-group">
-          <label class="form-label">Phone Number</label>
-          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="newPhone" name="phone" placeholder="e.g. +1 555-0192" />
+          <label class="form-label">Số điện thoại</label>
+          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="newPhone" name="phone" placeholder="Ví dụ: 0912345678" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Học phí 1 buổi</label>
+          <input type="number" class="neumorphic-inset form-input" [(ngModel)]="newFee" name="fee" placeholder="Ví dụ: 50000" min="0" />
         </div>
 
         <div class="form-group-lg">
-          <label class="form-label">Academic Status</label>
+          <label class="form-label">Trạng thái Học tập</label>
           <select class="neumorphic-inset form-input" [(ngModel)]="newStatus" name="status">
-            <option value="enrolled">Enrolled</option>
-            <option value="inactive">Inactive</option>
-            <option value="graduated">Graduated</option>
-            <option value="suspended">Suspended</option>
+            <option value="enrolled">Đang học</option>
+            <option value="inactive">Nghỉ học</option>
+            <option value="graduated">Tốt nghiệp</option>
+            <option value="suspended">Tạm dừng</option>
           </select>
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="clay-btn" (click)="showNewModal.set(false)">Cancel</button>
-          <button type="submit" class="neumorphic-button">Register Student</button>
+          <button type="button" class="clay-btn" (click)="showNewModal.set(false)">Hủy bỏ</button>
+          <button type="submit" class="neumorphic-button">Đăng ký Học sinh</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Edit Student Modal -->
+@if (showEditModal()) {
+  <div class="modal-backdrop">
+    <div class="neu-flat modal-card">
+      <h3 class="modal-title">Chỉnh sửa Học sinh</h3>
+      
+      <form (ngSubmit)="updateStudent()">
+        <div class="form-group">
+          <label class="form-label">Họ và tên</label>
+          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="editStudentData.name" name="editName" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Biệt danh / Tên gọi</label>
+          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="editStudentData.alias" name="editAlias" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Số điện thoại</label>
+          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="editStudentData.phone" name="editPhone" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Học phí 1 buổi</label>
+          <input type="number" class="neumorphic-inset form-input" [(ngModel)]="editStudentData.fee_per_session" name="editFee" min="0" />
+        </div>
+
+        <div class="form-group-lg">
+          <label class="form-label">Trạng thái Học tập</label>
+          <select class="neumorphic-inset form-input" [(ngModel)]="editStudentData.status" name="editStatus">
+            <option value="enrolled">Đang học</option>
+            <option value="inactive">Nghỉ học</option>
+            <option value="graduated">Tốt nghiệp</option>
+            <option value="suspended">Tạm dừng</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="clay-btn" (click)="showEditModal.set(false)">Hủy bỏ</button>
+          <button type="submit" class="neumorphic-button">Lưu Thay đổi</button>
         </div>
       </form>
     </div>

@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { StudentService } from '../../services/student.service';
 import { AttendanceService } from '../../services/attendance.service';
 import { FeeModalComponent } from '../fee-modal/fee-modal.component';
-import { Student } from '../../models/student.model';
+import { Student, StudentStatus } from '../../models/student.model';
 
 @Component({
   selector: 'app-student-detail',
@@ -22,8 +22,8 @@ export class StudentDetailComponent implements OnInit {
   month = signal<number>(this.today.getMonth() + 1);
 
   currentMonthLabel = computed(() => {
-    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    return `${months[this.month() - 1]} ${this.year()}`;
+    const months = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+    return `${months[this.month() - 1]} năm ${this.year()}`;
   });
 
   calendarDays = computed(() => {
@@ -82,6 +82,17 @@ export class StudentDetailComponent implements OnInit {
     const st = this.student();
     if (!st) return;
     this.attendanceService.toggleAttendance(st.student_id, dateStr, isPresent).subscribe();
+  }
+
+  getStatusLabel(status?: StudentStatus): string {
+    if (!status) return '';
+    switch (status) {
+      case 'enrolled': return 'Đang học';
+      case 'inactive': return 'Nghỉ học';
+      case 'graduated': return 'Tốt nghiệp';
+      case 'suspended': return 'Tạm dừng';
+      default: return status;
+    }
   }
 
   changeMonth(delta: number) {

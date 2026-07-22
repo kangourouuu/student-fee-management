@@ -4,8 +4,8 @@
     <!-- Header -->
     <div class="modal-header">
       <div>
-        <h3 class="modal-title">Fee Statement Export</h3>
-        <p class="modal-subtitle">Billing for {{ student.name }} (Nickname: {{ student.alias || 'N/A' }})</p>
+        <h3 class="modal-title">Xuất Báo cáo Học phí</h3>
+        <p class="modal-subtitle">Bảng kê học phí: {{ student.name }} (Biệt danh: {{ student.alias || 'N/A' }})</p>
       </div>
       <button (click)="close.emit()" class="neu-button close-btn">
         ×
@@ -14,59 +14,83 @@
 
     <!-- Form Fields -->
     <div class="form-fields">
-      <div>
-        <label class="form-label">Fee Per Session</label>
-        <input 
-          type="number" 
-          class="neu-inset fee-input" 
-          [ngModel]="feePerSession()"
-          (ngModelChange)="feePerSession.set($event)"
-          min="0"
-        />
-      </div>
-
+      <!-- Month & Year Selector -->
       <div class="dates-grid">
         <div>
-          <label class="date-label">Start Date</label>
-          <input type="date" class="neu-inset date-input" [(ngModel)]="startDate" />
+          <label class="date-label">Tháng thanh toán</label>
+          <select class="neu-inset date-input" [(ngModel)]="selectedMonth" (change)="onMonthChange()">
+            <option [value]="1">Tháng 1 (Jan)</option>
+            <option [value]="2">Tháng 2 (Feb)</option>
+            <option [value]="3">Tháng 3 (Mar)</option>
+            <option [value]="4">Tháng 4 (Apr)</option>
+            <option [value]="5">Tháng 5 (May)</option>
+            <option [value]="6">Tháng 6 (Jun)</option>
+            <option [value]="7">Tháng 7 (Jul)</option>
+            <option [value]="8">Tháng 8 (Aug)</option>
+            <option [value]="9">Tháng 9 (Sep)</option>
+            <option [value]="10">Tháng 10 (Oct)</option>
+            <option [value]="11">Tháng 11 (Nov)</option>
+            <option [value]="12">Tháng 12 (Dec)</option>
+          </select>
         </div>
 
         <div>
-          <label class="date-label">End Date</label>
-          <input type="date" class="neu-inset date-input" [(ngModel)]="endDate" />
+          <label class="date-label">Năm</label>
+          <input type="number" class="neu-inset date-input" [(ngModel)]="selectedYear" (change)="onMonthChange()" min="2020" max="2030" />
         </div>
+      </div>
+
+      <!-- Teacher Feedback Note Field -->
+      <div>
+        <label class="form-label">Nhận xét / Ghi chú của Giáo viên</label>
+        <textarea 
+          class="neu-inset note-input" 
+          rows="2" 
+          [(ngModel)]="teacherNote" 
+          placeholder="Nhập nhận xét học tập hoặc ghi chú cho phụ huynh/học sinh..."
+        ></textarea>
       </div>
     </div>
 
     <!-- Calculation Panel -->
-    <div class="neu-inset calc-panel">
-      <div>
-        <p class="days-text">Attended Days: <span class="days-bold">{{ attendedDays }} days</span></p>
-        <p class="calc-label">Total Calculated Fee</p>
+    <div class="neu-inset calc-panel" style="flex-direction: column; align-items: stretch; gap: 0.75rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <p class="days-text">Số buổi đi học (Tháng {{ selectedMonth }}/{{ selectedYear }}): <span class="days-bold">{{ attendedDaysCount() }} buổi</span></p>
+        <div class="total-fee-val">{{ totalFee() }}</div>
       </div>
-      <div class="total-fee-val">
-        {{ totalFee() }}
+      
+      <!-- Attended Days List with DD/MM Chips -->
+      <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.6rem;">
+        <p style="font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 0.4rem;">Các ngày đi học:</p>
+        <div class="chips-flex">
+          @if (attendedDayChips().length === 0) {
+            <span style="font-size: 0.8rem; color: #94a3b8;">Chưa có ngày nào</span>
+          }
+          @for (chip of attendedDayChips(); track chip) {
+            <span class="day-chip">{{ chip }}</span>
+          }
+        </div>
       </div>
     </div>
 
     <!-- Scan to Pay Custom QR Code Module -->
     <div class="neu-button qr-panel">
-      <p class="qr-title">Scan to Pay</p>
+      <p class="qr-title">Quét mã thanh toán</p>
       <div class="qr-container">
-        <img [src]="qrCodeImage" alt="Scan to Pay QR Code" class="qr-img" />
+        <img [src]="qrCodeImage" alt="Quét mã thanh toán QR Code" class="qr-img" />
       </div>
     </div>
 
     <!-- Action Buttons -->
     <div class="actions-row">
       <button (click)="close.emit()" class="clay-btn cancel-btn">
-        Cancel
+        Hủy bỏ
       </button>
       <button (click)="onExportPNG()" class="clay-btn png-btn">
-        Save as PNG
+        Lưu ảnh PNG
       </button>
       <button (click)="onExport()" class="neumorphic-button excel-btn">
-        Export Excel (.xlsx)
+        Xuất file Excel (.xlsx)
       </button>
     </div>
   </div>

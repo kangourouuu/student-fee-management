@@ -26,8 +26,17 @@ func (u *studentUsecase) GetStudents(ctx context.Context) ([]domain.StudentDTO, 
 	return dtos, nil
 }
 
-func (u *studentUsecase) CreateStudent(ctx context.Context, studentID, name, alias, phone string, status domain.StudentStatus) (*domain.StudentDTO, error) {
-	st, err := u.repo.CreateStudent(ctx, studentID, name, alias, phone, status)
+func (u *studentUsecase) CreateStudent(ctx context.Context, studentID, name, alias, phone string, feePerSession float64, status domain.StudentStatus) (*domain.StudentDTO, error) {
+	st, err := u.repo.CreateStudent(ctx, studentID, name, alias, phone, feePerSession, status)
+	if err != nil {
+		return nil, err
+	}
+	dto := st.ToDTO(true)
+	return &dto, nil
+}
+
+func (u *studentUsecase) UpdateStudent(ctx context.Context, id, name, alias, phone string, feePerSession float64, status domain.StudentStatus) (*domain.StudentDTO, error) {
+	st, err := u.repo.UpdateStudent(ctx, id, name, alias, phone, feePerSession, status)
 	if err != nil {
 		return nil, err
 	}

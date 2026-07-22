@@ -48,17 +48,32 @@ export class StudentService {
     );
   }
 
-  createStudent(student_id: string, name: string, alias: string, phone: string, status: StudentStatus): Observable<any> {
+  createStudent(student_id: string, name: string, alias: string, phone: string, fee_per_session: number, status: StudentStatus): Observable<any> {
     return this.http.post<any>(this.apiUrl, {
       student_id,
       name,
       alias,
       phone,
+      fee_per_session,
       status
     }, { withCredentials: true }).pipe(
       tap((res) => {
         if (res.status === 'success' && res.response?.student) {
           this.students.update((list) => [res.response.student, ...list]);
+        }
+      })
+    );
+  }
+
+  updateStudent(student: Student): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${student.student_id}`, student, { withCredentials: true }).pipe(
+      tap((res) => {
+        if (res.status === 'success' && res.response?.student) {
+          const updated = res.response.student;
+          this.students.update((list) => list.map(s => (s.id === updated.id || s.student_id === updated.student_id) ? updated : s));
+          if (this.selectedStudent()?.id === updated.id || this.selectedStudent()?.student_id === updated.student_id) {
+            this.selectedStudent.set(updated);
+          }
         }
       })
     );
