@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/xuri/excelize/v2"
@@ -23,18 +22,7 @@ func NewBillingUsecase(pool *pgxpool.Pool) domain.BillingUsecase {
 
 func (b *billingUsecase) ExportFeeStatement(ctx context.Context, req domain.ExportBillingRequest) ([]byte, *domain.FeeStatement, error) {
 	if b.pool == nil {
-		stmt := &domain.FeeStatement{
-			ID:               "mock-stmt-id",
-			StudentID:        req.StudentID,
-			BillingStartDate: req.BillingStartDate,
-			BillingEndDate:   req.BillingEndDate,
-			FeePerSession:    req.FeePerSession,
-			TotalDays:        15,
-			TotalFee:         15 * req.FeePerSession,
-			CreatedAt:        time.Now(),
-		}
-		excelBytes, err := generateExcelSheet("Mock Student", req.StudentID, req.BillingStartDate, req.BillingEndDate, 15, req.FeePerSession, 15*req.FeePerSession)
-		return excelBytes, stmt, err
+		return nil, nil, fmt.Errorf("database connection pool is not initialized")
 	}
 
 	tx, err := b.pool.Begin(ctx)
@@ -97,7 +85,6 @@ func (b *billingUsecase) ExportFeeStatement(ctx context.Context, req domain.Expo
 		FeePerSession:    req.FeePerSession,
 		TotalDays:        totalDays,
 		TotalFee:         totalFee,
-		CreatedAt:        time.Now(),
 	}
 
 	return excelBytes, statement, nil

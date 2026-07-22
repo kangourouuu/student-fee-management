@@ -52,12 +52,7 @@ func (r *attendanceRepository) GetAttendance(ctx context.Context, studentID stri
 
 func (r *attendanceRepository) ToggleAttendance(ctx context.Context, studentID string, recordDate string, isPresent bool) (*domain.AttendanceRecord, bool, error) {
 	if r.pool == nil {
-		return &domain.AttendanceRecord{
-			ID:         "mock-att-id",
-			StudentID:  studentID,
-			RecordDate: recordDate,
-			IsPresent:  isPresent,
-		}, true, nil
+		return nil, false, fmt.Errorf("database connection pool is not initialized")
 	}
 
 	if isPresent {

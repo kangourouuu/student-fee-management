@@ -103,8 +103,8 @@ import { Student, StudentStatus } from '../../models/student.model';
         <div style="display: flex; flex-direction: column; gap: 1rem;">
           @if (studentService.filteredStudents().length === 0) {
             <div class="neumorphic" style="padding: 3rem; text-align: center; color: #64748b;">
-              <p style="font-size: 1.1rem; font-weight: 600;">No students found matching your criteria</p>
-              <p style="font-size: 0.9rem; margin-top: 0.5rem;">Try adjusting your search query or status filter.</p>
+              <p style="font-size: 1.1rem; font-weight: 600;">No student records registered yet</p>
+              <p style="font-size: 0.9rem; margin-top: 0.5rem;">Click "Add New Student" above to register your first student.</p>
             </div>
           }
 
@@ -183,7 +183,7 @@ import { Student, StudentStatus } from '../../models/student.model';
 })
 export class DashboardComponent implements OnInit {
   showNewModal = signal<boolean>(false);
-  newStudentId = 'STU-08291';
+  newStudentId = '';
   newName = '';
   newPhone = '';
   newStatus: StudentStatus = 'enrolled';
@@ -202,6 +202,7 @@ export class DashboardComponent implements OnInit {
     if (!this.newStudentId || !this.newName) return;
     this.studentService.createStudent(this.newStudentId, this.newName, this.newPhone, this.newStatus).subscribe(() => {
       this.showNewModal.set(false);
+      this.newStudentId = '';
       this.newName = '';
       this.newPhone = '';
     });

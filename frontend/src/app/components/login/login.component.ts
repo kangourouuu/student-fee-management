@@ -31,7 +31,7 @@ import { AuthService } from '../../services/auth.service';
               style="width: 100%; outline: none; border: 1px solid rgba(255,255,255,0.6); font-size: 1rem;" 
               [(ngModel)]="username" 
               name="username"
-              placeholder="e.g. admin"
+              placeholder="Enter username"
               required
             />
           </div>
@@ -44,7 +44,7 @@ import { AuthService } from '../../services/auth.service';
               style="width: 100%; outline: none; border: 1px solid rgba(255,255,255,0.6); font-size: 1rem;" 
               [(ngModel)]="password" 
               name="password"
-              placeholder="••••••••"
+              placeholder="Enter password"
               required
             />
           </div>
@@ -69,14 +69,19 @@ import { AuthService } from '../../services/auth.service';
   `
 })
 export class LoginComponent {
-  username = 'admin';
-  password = 'admin123';
+  username = '';
+  password = '';
   errorMessage = signal<string>('');
   loading = signal<boolean>(false);
 
   constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit() {
+    if (!this.username || !this.password) {
+      this.errorMessage.set('Please enter username and password');
+      return;
+    }
+
     this.loading.set(true);
     this.errorMessage.set('');
 

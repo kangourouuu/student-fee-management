@@ -51,13 +51,7 @@ func (r *studentRepository) CreateStudent(ctx context.Context, studentID, name, 
 	}
 
 	if r.pool == nil {
-		return &domain.Student{
-			ID:        "mock-uuid",
-			StudentID: studentID,
-			Name:      name,
-			Phone:     phone,
-			Status:    status,
-		}, nil
+		return nil, fmt.Errorf("database connection pool is not initialized")
 	}
 
 	query := `INSERT INTO student_fee_core.students (student_id, name, phone, status) 
