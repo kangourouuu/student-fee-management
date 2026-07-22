@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BillingService } from '../../services/billing.service';
 import { Student } from '../../models/student.model';
+import { QR_CODE_BASE64 } from '../../constants/qr-code.constant';
 
 @Component({
   selector: 'app-fee-modal',
@@ -10,7 +11,7 @@ import { Student } from '../../models/student.model';
   imports: [CommonModule, FormsModule],
   template: `
     <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.35); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1.5rem;">
-      <div class="neu-flat" style="width: 100%; max-width: 480px; padding: 2.25rem; position: relative;">
+      <div class="neu-flat" style="width: 100%; max-width: 480px; padding: 2.25rem; position: relative; max-height: 92vh; overflow-y: auto;">
         
         <!-- Header -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
@@ -63,11 +64,10 @@ import { Student } from '../../models/student.model';
 
         <!-- Scan to Pay Custom QR Code Module -->
         <div class="neu-button" style="padding: 1.25rem; margin-bottom: 1.5rem; text-align: center; display: flex; flex-direction: column; align-items: center; background: #e0f2fe;">
-          <p style="font-size: 0.85rem; font-weight: 700; color: #0369a1; margin-bottom: 0.75rem;">Scan to Pay via Banking App</p>
-          <div style="background: white; padding: 0.75rem; border-radius: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-            <img src="assets/qr-payment.png" alt="Scan to Pay QR Code" style="width: 120px; height: 120px; border-radius: 0.5rem; object-fit: contain;" />
+          <p style="font-size: 0.95rem; font-weight: 700; color: #0369a1; margin-bottom: 0.75rem;">Scan to Pay</p>
+          <div style="width: 180px; height: 248px; border-radius: 1rem; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: center; background: #ffffff;">
+            <img [src]="qrCodeImage" alt="Scan to Pay QR Code" style="width: 100%; height: 100%; object-fit: fill; display: block;" />
           </div>
-          <span style="font-size: 0.75rem; color: #0284c7; font-weight: 600; margin-top: 0.5rem;">Account: STUDENT-FEE-{{ student.alias || student.student_id }}</span>
         </div>
 
         <!-- Action Buttons -->
@@ -91,6 +91,7 @@ export class FeeModalComponent implements OnInit {
   @Input({ required: true }) attendedDays: number = 0;
   @Output() close = new EventEmitter<void>();
 
+  qrCodeImage = QR_CODE_BASE64;
   feePerSession = signal<number>(25);
   startDate = '';
   endDate = '';
@@ -130,23 +131,33 @@ export class FeeModalComponent implements OnInit {
   }
 
   onExportPNG() {
+    // High DPI 2x Scale Canvas for crisp vector-quality PNG output
+    const scale = 2;
     const canvas = document.createElement('canvas');
-    canvas.width = 600;
-    canvas.height = 680;
+    canvas.width = 600 * scale;
+    canvas.height = 760 * scale;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    ctx.scale(scale, scale);
+
+    // Disable image smoothing for sharp, crisp pixel lines
+    ctx.imageSmoothingEnabled = false;
+    (ctx as any).webkitImageSmoothingEnabled = false;
+    (ctx as any).mozImageSmoothingEnabled = false;
+    (ctx as any).msImageSmoothingEnabled = false;
+
     // Outer Background
     ctx.fillStyle = '#eef2f5';
-    ctx.fillRect(0, 0, 600, 680);
+    ctx.fillRect(0, 0, 600, 760);
 
     // Card Surface
     ctx.fillStyle = '#ffffff';
     if (typeof (ctx as any).roundRect === 'function') {
-      (ctx as any).roundRect(30, 30, 540, 620, 20);
+      (ctx as any).roundRect(30, 30, 540, 700, 20);
       ctx.fill();
     } else {
-      ctx.fillRect(30, 30, 540, 620);
+      ctx.fillRect(30, 30, 540, 700);
     }
 
     // Title
@@ -202,16 +213,16 @@ export class FeeModalComponent implements OnInit {
     ctx.fillText('Total Calculated Fee:', 80, 360);
     ctx.fillText(`${this.totalFee()}`, 360, 360);
 
-    // QR Image Draw
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      ctx.drawImage(img, 235, 420, 130, 130);
-      ctx.fillStyle = '#0284c7';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`Account: STUDENT-FEE-${this.student.alias || this.student.student_id}`, 300, 580);
+    // Scan to Pay label
+    ctx.fillStyle = '#0369a1';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Scan to Pay', 300, 420);
 
+    // High-resolution Crisp QR Image Draw matching 942x1296 aspect ratio
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 210, 435, 180, 248);
       const dataUrl = canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = dataUrl;
@@ -220,11 +231,6 @@ export class FeeModalComponent implements OnInit {
     };
 
     img.onerror = () => {
-      ctx.fillStyle = '#0284c7';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`Account: STUDENT-FEE-${this.student.alias || this.student.student_id}`, 300, 480);
-
       const dataUrl = canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = dataUrl;
@@ -232,6 +238,6 @@ export class FeeModalComponent implements OnInit {
       a.click();
     };
 
-    img.src = 'assets/qr-payment.png';
+    img.src = this.qrCodeImage;
   }
 }
