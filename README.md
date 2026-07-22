@@ -3,6 +3,8 @@
 [![Go Version](https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat&logo=go)](https://golang.org)
 [![Angular](https://img.shields.io/badge/Angular-21%20Zoneless-DD0031?style=flat&logo=angular)](https://angular.dev)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20%2F%20Neon-4169E1?style=flat&logo=postgresql)](https://neon.tech)
+[![Render](https://img.shields.io/badge/Render-Deployed-46E3B7?style=flat&logo=render)](https://render.com)
+[![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=flat&logo=vercel)](https://vercel.com)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A modern, full-stack **Student Fee Management & Attendance Tracking System** built with **Go Clean Architecture** on the backend and **Zoneless Angular 21 with Signals** on the frontend, styled with a tactile 3D Neumorphic & Claymorphic design system.
@@ -16,9 +18,9 @@ A modern, full-stack **Student Fee Management & Attendance Tracking System** bui
 - **Sanitized DTO Payloads**: API endpoints return `StudentDTO` objects with masked PII phone numbers (`+1 555-***192`) to prevent data leakage.
 - **Zoneless Angular 21 Client**: Powered by Angular `Signal` wrappers and reactive computation models (`computed()`).
 - **ACID Transactional Billing Service**: Performs in-memory fee calculation, statement audit logging in PostgreSQL (`student_fee_core.fee_statements`), and dynamic `.xlsx` spreadsheet compilation via `excelize/v2` with atomic rollback safety.
+- **High-DPI PNG & Excel Export**: Export fee statement receipts to crisp, vector-quality PNG images (with scan-to-pay QR code) or Excel `.xlsx` spreadsheets.
 - **3D Neumorphic & Claymorphic UI**: Custom CSS design system adhering to clay volumes, soft inset/outset shadows, and glassmorphic panels.
 - **Interactive Attendance Calendar**: Clickable calendar grid tiles for toggling student attendance days and visualizing monthly stats.
-- **QR Payment Module**: Scan-to-pay banking QR code integrated into the fee export modal.
 - **Standardized REST API Responses**: All endpoints return unified `{ "status": "success | error", "response": { ... } }` payloads.
 - **Senior Structured Logging**: Built-in JSON logger emitting log entries with `status`, `relevant_component`, and `actual_debug_log`.
 - **JWT Session Security**: Secure `HttpOnly`, `SameSite=Lax` cookie-based authentication.
@@ -57,7 +59,7 @@ E:/student-management/
 ├── frontend/                       # Angular 21 Zoneless Signals Client
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── components/         # Login, Dashboard, StudentDetail, FeeModal
+│   │   │   ├── components/         # Login, Dashboard, StudentDetail, FeeModal (.ts, .html, .scss)
 │   │   │   ├── guards/             # AuthGuard route protection
 │   │   │   ├── services/           # AuthService, StudentService, AttendanceService, BillingService
 │   │   │   └── models/             # Frontend model definitions
@@ -65,9 +67,12 @@ E:/student-management/
 │   ├── angular.json
 │   ├── package.json
 │   ├── proxy.conf.json
-│   └── tsconfig.json
+│   └── vercel.json
+├── migrations/                     # SQL Migration scripts (001_add_alias_column.sql)
 ├── .env.example
 ├── Dockerfile                      # Multi-stage production container build
+├── render.yaml                     # Render Blueprint Web Service definition
+├── vercel.json                     # Root Vercel deployment configuration
 └── README.md
 ```
 
@@ -108,6 +113,39 @@ E:/student-management/
    ```
 
 2. Open browser at `http://localhost:4200` (or `http://localhost:8080`).
+
+---
+
+## 🚀 Cloud Deployment Instructions
+
+### 1. Backend API Service Deployment (Render & Neon Postgres)
+
+1. **Database Setup (Neon Postgres)**:
+   * Create a serverless PostgreSQL database project at [neon.tech](https://neon.tech).
+   * Copy the PostgreSQL connection URI string (`postgres://<user>:<password>@<host>/<database>?sslmode=require`).
+
+2. **Render Deployment**:
+   * Go to [Render Dashboard](https://dashboard.render.com/) -> New -> **Web Service**.
+   * Connect your GitHub repository (`kangourouuu/student-fee-management`).
+   * Render will automatically detect `render.yaml` or set **Environment: Docker**.
+   * Add the following **Environment Variables**:
+     * `DATABASE_URL`: `postgres://user:pass@host/db?sslmode=require`
+     * `ADMIN_USERNAME`: `admin`
+     * `ADMIN_PASSWORD`: `<your-secure-password>`
+     * `JWT_SECRET`: `<your-random-32-character-secret>`
+     * `ENCRYPTION_KEY`: `<your-32-byte-secret-key>`
+   * Click **Deploy Web Service**. Render will compile the Go backend via Docker and host it (e.g. `https://student-fee-backend.onrender.com`).
+
+---
+
+### 2. Frontend Client Deployment (Vercel)
+
+1. **Vercel Deployment**:
+   * Go to [Vercel Dashboard](https://vercel.com/) -> **Add New Project**.
+   * Import repository `kangourouuu/student-fee-management`.
+   * Set **Root Directory** to `./` or `./frontend`.
+   * Vercel will automatically read `vercel.json`, run `npm run build`, and deploy the Zoneless Angular 21 single page application.
+   * Configure proxy rewrite in `vercel.json` pointing `/api/(.*)` to your deployed Render backend URL (`https://student-fee-backend.onrender.com/api/$1`).
 
 ---
 
