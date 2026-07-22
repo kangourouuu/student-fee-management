@@ -9,6 +9,7 @@ import (
 func CORSMiddleware() func(http.Handler) http.Handler {
 	allowedOrigins := map[string]bool{
 		"https://student-fee-management-pied.vercel.app": true,
+		"https://student-fee-backend-nopb.onrender.com":  true,
 		"http://localhost:4200":                           true,
 		"http://localhost:8080":                           true,
 		"http://127.0.0.1:4200":                           true,
@@ -29,7 +30,7 @@ func CORSMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			origin := r.Header.Get("Origin")
-			if origin != "" && (allowedOrigins[origin] || strings.HasSuffix(origin, ".vercel.app")) {
+			if origin != "" && (allowedOrigins[origin] || strings.HasSuffix(origin, ".vercel.app") || strings.HasSuffix(origin, ".onrender.com")) {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
 				w.Header().Set("Access-Control-Allow-Credentials", "true")
 				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")

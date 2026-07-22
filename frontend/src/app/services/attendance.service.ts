@@ -2,12 +2,15 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { AttendanceRecord } from '../models/student.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AttendanceService {
-  private apiUrl = '/api/attendance';
+  private get apiUrl() {
+    return `${environment.apiUrl}/api/attendance`;
+  }
 
   attendanceMap = signal<Record<string, boolean>>({});
 
@@ -28,7 +31,7 @@ export class AttendanceService {
 
   fetchAttendance(studentId: string, month: string): Observable<any> {
     this.currentMonth.set(month);
-    return this.http.get<any>(`${this.apiUrl}?student_id=${studentId}&month=${month}`).pipe(
+    return this.http.get<any>(`${this.apiUrl}?student_id=${studentId}&month=${month}`, { withCredentials: true }).pipe(
       tap((res) => {
         if (res.status === 'success' && Array.isArray(res.response?.records)) {
           const map: Record<string, boolean> = {};
@@ -48,7 +51,7 @@ export class AttendanceService {
       student_id: studentId,
       record_date: recordDate,
       is_present: isPresent
-    }).pipe(
+    }, { withCredentials: true }).pipe(
       tap((res) => {
         if (res.status === 'success') {
           this.attendanceMap.update((map) => {

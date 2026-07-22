@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface BillingExportPayload {
   student_id: string;
@@ -13,13 +14,16 @@ export interface BillingExportPayload {
   providedIn: 'root'
 })
 export class BillingService {
-  private apiUrl = '/api/billing/export';
+  private get apiUrl() {
+    return `${environment.apiUrl}/api/billing/export`;
+  }
 
   constructor(private http: HttpClient) {}
 
   exportExcel(payload: BillingExportPayload): Observable<Blob> {
     return this.http.post(this.apiUrl, payload, {
-      responseType: 'blob'
+      responseType: 'blob',
+      withCredentials: true
     });
   }
 }

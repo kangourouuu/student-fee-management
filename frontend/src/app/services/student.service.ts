@@ -2,12 +2,15 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Student, StudentStatus } from '../models/student.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StudentService {
-  private apiUrl = '/api/students';
+  private get apiUrl() {
+    return `${environment.apiUrl}/api/students`;
+  }
 
   students = signal<Student[]>([]);
   searchQuery = signal<string>('');
@@ -36,7 +39,7 @@ export class StudentService {
   constructor(private http: HttpClient) {}
 
   fetchStudents(): Observable<any> {
-    return this.http.get<any>(this.apiUrl).pipe(
+    return this.http.get<any>(this.apiUrl, { withCredentials: true }).pipe(
       tap((res) => {
         if (res.status === 'success' && Array.isArray(res.response?.students)) {
           this.students.set(res.response.students);
@@ -52,7 +55,7 @@ export class StudentService {
       alias,
       phone,
       status
-    }).pipe(
+    }, { withCredentials: true }).pipe(
       tap((res) => {
         if (res.status === 'success' && res.response?.student) {
           this.students.update((list) => [res.response.student, ...list]);
