@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal, computed } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BillingService } from '../../services/billing.service';
@@ -103,20 +103,31 @@ import { Student } from '../../models/student.model';
     </div>
   `
 })
-export class FeeModalComponent {
+export class FeeModalComponent implements OnInit {
   @Input({ required: true }) student!: Student;
   @Input({ required: true }) attendedDays: number = 0;
   @Output() close = new EventEmitter<void>();
 
   feePerSession = signal<number>(25);
-  startDate = '2023-10-01';
-  endDate = '2023-10-31';
+  startDate = '';
+  endDate = '';
 
   totalFee = computed(() => {
     return this.attendedDays * (this.feePerSession() || 0);
   });
 
   constructor(private billingService: BillingService) {}
+
+  ngOnInit() {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = today.getMonth() + 1;
+    const monthStr = m < 10 ? `0${m}` : `${m}`;
+    const dayStr = today.getDate() < 10 ? `0${today.getDate()}` : `${today.getDate()}`;
+
+    this.startDate = `${y}-${monthStr}-01`;
+    this.endDate = `${y}-${monthStr}-${dayStr}`;
+  }
 
   onExport() {
     this.billingService.exportExcel({

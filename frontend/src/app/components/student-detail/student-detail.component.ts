@@ -142,8 +142,10 @@ import { Student } from '../../models/student.model';
 export class StudentDetailComponent implements OnInit {
   student = signal<Student | null>(null);
   showFeeModal = signal<boolean>(false);
-  year = signal<number>(2023);
-  month = signal<number>(10);
+
+  private today = new Date();
+  year = signal<number>(this.today.getFullYear());
+  month = signal<number>(this.today.getMonth() + 1);
 
   currentMonthLabel = computed(() => {
     const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -196,7 +198,9 @@ export class StudentDetailComponent implements OnInit {
         });
       }
 
-      this.attendanceService.fetchAttendance(studentIdStr, '2023-10').subscribe();
+      const m = this.month();
+      const monthStr = m < 10 ? `0${m}` : `${m}`;
+      this.attendanceService.fetchAttendance(studentIdStr, `${this.year()}-${monthStr}`).subscribe();
     }
   }
 

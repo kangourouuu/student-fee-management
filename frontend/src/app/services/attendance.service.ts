@@ -10,7 +10,15 @@ export class AttendanceService {
   private apiUrl = '/api/attendance';
 
   attendanceMap = signal<Record<string, boolean>>({});
-  currentMonth = signal<string>('2023-10');
+
+  private getTodayMonthStr(): string {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = today.getMonth() + 1;
+    return `${y}-${m < 10 ? '0' + m : m}`;
+  }
+
+  currentMonth = signal<string>(this.getTodayMonthStr());
 
   totalAttendedDays = computed(() => {
     return Object.values(this.attendanceMap()).filter(Boolean).length;

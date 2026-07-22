@@ -30,7 +30,7 @@ func (h *AttendanceHandler) GetAttendance(w http.ResponseWriter, r *http.Request
 	records, err := h.attendanceUsecase.GetAttendance(r.Context(), studentID, month)
 	if err != nil {
 		middleware.LogEvent(http.StatusInternalServerError, "attendance_handler", "Failed to fetch attendance: "+err.Error())
-		response.Error(w, http.StatusInternalServerError, "Failed to retrieve attendance records")
+		response.Error(w, http.StatusInternalServerError, "Failed to retrieve attendance records: "+err.Error())
 		return
 	}
 
@@ -65,7 +65,7 @@ func (h *AttendanceHandler) ToggleAttendance(w http.ResponseWriter, r *http.Requ
 	rec, active, err := h.attendanceUsecase.ToggleAttendance(r.Context(), req.StudentID, req.RecordDate, req.IsPresent)
 	if err != nil {
 		middleware.LogEvent(http.StatusInternalServerError, "attendance_handler", "Failed to toggle attendance: "+err.Error())
-		response.Error(w, http.StatusInternalServerError, "Failed to update attendance record")
+		response.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
