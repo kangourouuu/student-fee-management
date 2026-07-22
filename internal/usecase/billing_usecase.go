@@ -75,7 +75,7 @@ func (b *billingUsecase) ExportFeeStatement(ctx context.Context, req domain.Expo
 		return nil, nil, fmt.Errorf("failed to commit billing transaction: %w", err)
 	}
 
-	middleware.LogEvent(200, "billing_usecase", fmt.Sprintf("Successfully committed fee export transaction for student %s (Total: $%.2f)", req.StudentID, totalFee))
+	middleware.LogEvent(200, "billing_usecase", fmt.Sprintf("Successfully committed fee export transaction for student %s (Total: %.2f)", req.StudentID, totalFee))
 
 	statement := &domain.FeeStatement{
 		ID:               statementID,
@@ -110,9 +110,9 @@ func generateExcelSheet(studentName, studentID, startDate, endDate string, total
 
 	_ = f.SetCellValue(sheet, "A8", "Total Attended Days")
 	_ = f.SetCellValue(sheet, "B8", totalDays)
-	_ = f.SetCellValue(sheet, "A9", "Fee Per Session ($)")
+	_ = f.SetCellValue(sheet, "A9", "Fee Per Session")
 	_ = f.SetCellValue(sheet, "B9", feePerSession)
-	_ = f.SetCellValue(sheet, "A10", "Total Calculated Fee ($)")
+	_ = f.SetCellValue(sheet, "A10", "Total Calculated Fee")
 	_ = f.SetCellValue(sheet, "B10", totalFee)
 
 	var buf bytes.Buffer

@@ -69,8 +69,8 @@ import { Student } from '../../models/student.model';
           </div>
         </div>
 
-        <!-- 3-Column Summary Metrics -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+        <!-- 2-Column Summary Metrics -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
           <div class="clay-card" style="padding: 1.5rem; text-align: center;">
             <p style="font-size: 0.85rem; font-weight: 600; color: #64748b;">Attended Sessions</p>
             <h3 style="font-size: 2.2rem; font-weight: 700; color: #0284c7; margin-top: 0.4rem;">
@@ -82,13 +82,6 @@ import { Student } from '../../models/student.model';
             <p style="font-size: 0.85rem; font-weight: 600; color: #64748b;">Attendance Rate</p>
             <h3 style="font-size: 2.2rem; font-weight: 700; color: #16a34a; margin-top: 0.4rem;">
               {{ attendanceRate() }}%
-            </h3>
-          </div>
-
-          <div class="clay-card" style="padding: 1.5rem; text-align: center;">
-            <p style="font-size: 0.85rem; font-weight: 600; color: #64748b;">Billing Estimate ($25/day)</p>
-            <h3 style="font-size: 2.2rem; font-weight: 700; color: #326578; margin-top: 0.4rem;">
-              \${{ attendanceService.totalAttendedDays() * 25 }}
             </h3>
           </div>
         </div>

@@ -26,7 +26,7 @@ import { Student } from '../../models/student.model';
         <!-- Form Fields -->
         <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 1.5rem;">
           <div>
-            <label style="display: block; font-weight: 600; color: #475569; margin-bottom: 0.4rem; font-size: 0.9rem;">Fee Per Session ($)</label>
+            <label style="display: block; font-weight: 600; color: #475569; margin-bottom: 0.4rem; font-size: 0.9rem;">Fee Per Session</label>
             <input 
               type="number" 
               class="neu-inset" 
@@ -57,7 +57,7 @@ import { Student } from '../../models/student.model';
             <p style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-top: 0.25rem;">Total Calculated Fee</p>
           </div>
           <div style="font-size: 1.75rem; font-weight: 800; color: #0284c7;">
-            \${{ totalFee() }}
+            {{ totalFee() }}
           </div>
         </div>
 
