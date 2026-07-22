@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-color: #eef2f5;
+  --primary-accent: #55b9f3;
+  --primary-accent-light: #b3e5fc;
+  --secondary-slate: #326578;
+  --text-muted: #5c5f61;
+  --error-color: #ba1a1a;
+  --error-bg: #ffdad6;
+  --font-family: 'Hanken Grotesk', 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: #2c3e50;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Claymorphic Utility Classes */
+.clay-card {
+  background: #eef2f5;
+  border-radius: 2.5rem;
+  box-shadow: 15px 15px 30px rgba(209, 217, 230, 0.8), 
+              -15px -15px 30px rgba(255, 255, 255, 1),
+              inset 2px 2px 5px rgba(255, 255, 255, 0.5),
+              inset -2px -2px 5px rgba(209, 217, 230, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.clay-btn {
+  background: #eef2f5;
+  border-radius: 2rem;
+  box-shadow: 8px 8px 16px rgba(209, 217, 230, 0.8), 
+              -8px -8px 16px rgba(255, 255, 255, 1);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  color: var(--secondary-slate);
+}
+
+.clay-btn:hover {
+  box-shadow: 10px 10px 20px rgba(209, 217, 230, 0.9), 
+              -10px -10px 20px rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+}
+
+.clay-btn:active {
+  box-shadow: inset 6px 6px 12px rgba(209, 217, 230, 0.8), 
+              inset -6px -6px 12px rgba(255, 255, 255, 1);
+  transform: translateY(2px);
+}
+
+/* Calendar Cells */
+.clay-cell {
+  background: #eef2f5;
+  border-radius: 1.5rem;
+  box-shadow: 6px 6px 12px rgba(209, 217, 230, 0.7), 
+              -6px -6px 12px rgba(255, 255, 255, 1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clay-cell-inset {
+  background: #e1f0fa;
+  border-radius: 1.5rem;
+  box-shadow: inset 6px 6px 12px rgba(180, 205, 225, 0.8), 
+              inset -6px -6px 12px rgba(255, 255, 255, 1);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+}
+
+/* Glassmorphic Neumorphic Utility Classes */
+.neumorphic {
+  background: rgba(238, 242, 245, 0.8);
+  box-shadow: 8px 8px 16px #d1d9e0, -8px -8px 16px #ffffff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 1.5rem;
+}
+
+.neumorphic-inset {
+  background: rgba(238, 242, 245, 0.6);
+  box-shadow: inset 6px 6px 12px #d1d9e0, inset -6px -6px 12px #ffffff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.neumorphic-button {
+  background: #b3e5fc;
+  box-shadow: 6px 6px 12px #9ecae0, -6px -6px 12px #c8ffff;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
+  border-radius: 1rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  color: #1a4968;
+  cursor: pointer;
+}
+
+.neumorphic-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 8px 8px 16px #9ecae0, -8px -8px 16px #c8ffff;
+}
+
+.neumorphic-button:active {
+  box-shadow: inset 4px 4px 8px #9ecae0, inset -4px -4px 8px #c8ffff;
+  transform: translateY(1px);
+}
+
+.neu-flat {
+  background: #eef2f5;
+  box-shadow: 20px 20px 60px #cad0d3, -20px -20px 60px #ffffff;
+  border-radius: 2rem;
+}
+
+.neu-inset {
+  background: #eef2f5;
+  box-shadow: inset 8px 8px 16px #cad0d3, inset -8px -8px 16px #ffffff;
+  border-radius: 1.2rem;
+}
+
+.neu-button {
+  background: #e0f2fe;
+  box-shadow: 6px 6px 12px #b0c2cc, -6px -6px 12px #ffffff;
+  border-radius: 1rem;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.neu-button:active {
+  box-shadow: inset 4px 4px 8px #b0c2cc, inset -4px -4px 8px #ffffff;
+}
+
+/* Badge Status Styles */
+.badge-enrolled {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 0.35rem 0.85rem;
+  border-radius: 1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.badge-inactive {
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 0.35rem 0.85rem;
+  border-radius: 1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.badge-graduated {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 0.35rem 0.85rem;
+  border-radius: 1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.badge-suspended {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 0.35rem 0.85rem;
+  border-radius: 1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
