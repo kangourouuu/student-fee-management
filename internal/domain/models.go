@@ -3,6 +3,8 @@ package domain
 import (
 	"context"
 	"time"
+
+	"student-fee-management/internal/pkg/crypto"
 )
 
 type Student struct {
@@ -13,6 +15,33 @@ type Student struct {
 	Status    StudentStatus `json:"status"`
 	CreatedAt time.Time     `json:"created_at"`
 	UpdatedAt time.Time     `json:"updated_at"`
+}
+
+// StudentDTO protects sensitive PII by returning sanitized data payloads.
+type StudentDTO struct {
+	ID        string        `json:"id"`
+	StudentID string        `json:"student_id"`
+	Name      string        `json:"name"`
+	Phone     string        `json:"phone,omitempty"`
+	Status    StudentStatus `json:"status"`
+	CreatedAt time.Time     `json:"created_at"`
+	UpdatedAt time.Time     `json:"updated_at"`
+}
+
+func (s *Student) ToDTO(maskPhone bool) StudentDTO {
+	phoneVal := s.Phone
+	if maskPhone && phoneVal != "" {
+		phoneVal = crypto.MaskPhone(phoneVal)
+	}
+	return StudentDTO{
+		ID:        s.ID,
+		StudentID: s.StudentID,
+		Name:      s.Name,
+		Phone:     phoneVal,
+		Status:    s.Status,
+		CreatedAt: s.CreatedAt,
+		UpdatedAt: s.UpdatedAt,
+	}
 }
 
 type AttendanceRecord struct {
@@ -48,8 +77,8 @@ type StudentRepository interface {
 }
 
 type StudentUsecase interface {
-	GetStudents(ctx context.Context) ([]Student, error)
-	CreateStudent(ctx context.Context, studentID, name, phone string, status StudentStatus) (*Student, error)
+	GetStudents(ctx context.Context) ([]StudentDTO, error)
+	CreateStudent(ctx context.Context, studentID, name, phone string, status StudentStatus) (*StudentDTO, error)
 }
 
 type AttendanceRepository interface {

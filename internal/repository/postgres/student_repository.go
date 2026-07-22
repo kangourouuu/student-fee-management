@@ -6,14 +6,16 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"student-fee-management/internal/domain"
+	"student-fee-management/internal/pkg/crypto"
 )
 
 type studentRepository struct {
-	pool *pgxpool.Pool
+	pool   *pgxpool.Pool
+	encKey string
 }
 
-func NewStudentRepository(pool *pgxpool.Pool) domain.StudentRepository {
-	return &studentRepository{pool: pool}
+func NewStudentRepository(pool *pgxpool.Pool, encKey string) domain.StudentRepository {
+	return &studentRepository{pool: pool, encKey: encKey}
 }
 
 func (r *studentRepository) GetStudents(ctx context.Context) ([]domain.Student, error) {
@@ -34,11 +36,14 @@ func (r *studentRepository) GetStudents(ctx context.Context) ([]domain.Student, 
 	for rows.Next() {
 		var st domain.Student
 		var statusStr string
-		if err := rows.Scan(&st.ID, &st.StudentID, &st.Name, &st.Phone, &statusStr, &st.CreatedAt, &st.UpdatedAt); err != nil {
+		var rawPhone string
+		if err := rows.Scan(&st.ID, &st.StudentID, &st.Name, &rawPhone, &statusStr, &st.CreatedAt, &st.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("failed to scan student row: %w", err)
 		}
 		status, _ := domain.ParseStudentStatus(statusStr)
 		st.Status = status
+		decryptedPhone, _ := crypto.Decrypt(rawPhone, r.encKey)
+		st.Phone = decryptedPhone
 		students = append(students, st)
 	}
 
@@ -54,18 +59,25 @@ func (r *studentRepository) CreateStudent(ctx context.Context, studentID, name, 
 		return nil, fmt.Errorf("database connection pool is not initialized")
 	}
 
+	encryptedPhone, err := crypto.Encrypt(phone, r.encKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encrypt sensitive phone info: %w", err)
+	}
+
 	query := `INSERT INTO student_fee_core.students (student_id, name, phone, status) 
 	          VALUES ($1, $2, $3, $4) 
 	          RETURNING id, student_id, name, COALESCE(phone, ''), status, created_at, updated_at`
 
 	var st domain.Student
 	var statusStr string
-	err := r.pool.QueryRow(ctx, query, studentID, name, phone, string(status)).
-		Scan(&st.ID, &st.StudentID, &st.Name, &st.Phone, &statusStr, &st.CreatedAt, &st.UpdatedAt)
+	var rawPhone string
+	err = r.pool.QueryRow(ctx, query, studentID, name, encryptedPhone, string(status)).
+		Scan(&st.ID, &st.StudentID, &st.Name, &rawPhone, &statusStr, &st.CreatedAt, &st.UpdatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert student: %w", err)
 	}
 
 	st.Status = domain.StudentStatus(statusStr)
+	st.Phone = phone
 	return &st, nil
 }

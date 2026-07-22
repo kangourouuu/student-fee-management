@@ -40,7 +40,7 @@ func main() {
 
 	// Clean Architecture Dependency Injection
 	// 1. Repositories
-	studentRepo := postgres.NewStudentRepository(pool)
+	studentRepo := postgres.NewStudentRepository(pool, cfg.EncryptionKey)
 	attendanceRepo := postgres.NewAttendanceRepository(pool)
 
 	// 2. Usecases

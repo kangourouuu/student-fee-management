@@ -12,6 +12,8 @@ A modern, full-stack **Student Fee Management & Attendance Tracking System** bui
 ## 🌟 Key Features
 
 - **Clean Architecture (Go 1.24)**: Decoupled design following Domain, Usecase, Repository (PostgreSQL), and Delivery (HTTP) layers.
+- **AES-256-GCM Encryption**: PII student contact information (phone numbers) is encrypted at rest using AES-256-GCM prior to database persistence.
+- **Sanitized DTO Payloads**: API endpoints return `StudentDTO` objects with masked PII phone numbers (`+1 555-***192`) to prevent data leakage.
 - **Zoneless Angular 21 Client**: Powered by Angular `Signal` wrappers and reactive computation models (`computed()`).
 - **ACID Transactional Billing Service**: Performs in-memory fee calculation, statement audit logging in PostgreSQL (`student_fee_core.fee_statements`), and dynamic `.xlsx` spreadsheet compilation via `excelize/v2` with atomic rollback safety.
 - **3D Neumorphic & Claymorphic UI**: Custom CSS design system adhering to clay volumes, soft inset/outset shadows, and glassmorphic panels.
@@ -32,9 +34,11 @@ E:/student-management/
 │       └── main.go                 # Server entrypoint & dependency injection
 ├── internal/
 │   ├── config/                     # Environment configuration loader
-│   ├── domain/                     # Core domain entities & repository/usecase contracts
+│   ├── domain/                     # Core domain entities, DTOs & repository/usecase contracts
 │   │   ├── enums.go
 │   │   └── models.go
+│   ├── pkg/
+│   │   └── crypto/                 # AES-256-GCM encryption/decryption & PII masking
 │   ├── usecase/                    # Business logic application layer
 │   │   ├── auth_usecase.go
 │   │   ├── student_usecase.go
@@ -54,6 +58,7 @@ E:/student-management/
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── components/         # Login, Dashboard, StudentDetail, FeeModal
+│   │   │   ├── guards/             # AuthGuard route protection
 │   │   │   ├── services/           # AuthService, StudentService, AttendanceService, BillingService
 │   │   │   └── models/             # Frontend model definitions
 │   │   └── styles.css              # Neumorphic & Claymorphic CSS tokens
@@ -85,17 +90,17 @@ E:/student-management/
    ADMIN_USERNAME=admin
    ADMIN_PASSWORD=admin123
    JWT_SECRET=super-secret-key-student-fee-management
+   ENCRYPTION_KEY=32-byte-long-aes-256-gcm-secret-key-for-pii
    ```
 
 2. Run the Go backend server:
    ```bash
    go run ./cmd/server
    ```
-   *The server will start on `http://localhost:8080` and run automatic PostgreSQL schema migrations under `student_fee_core`.*
 
 ### 2. Frontend Setup
 
-1. Open a new terminal and navigate to `frontend/`:
+1. Navigate to `frontend/`:
    ```bash
    cd frontend
    npm install
@@ -103,39 +108,6 @@ E:/student-management/
    ```
 
 2. Open browser at `http://localhost:4200` (or `http://localhost:8080`).
-
-3. Log in using default credentials:
-   * **Username**: `admin`
-   * **Password**: `admin123`
-
----
-
-## 🌐 REST API Specifications
-
-| Method | Endpoint | Protection | Description |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/health` | Public | Service health check |
-| `POST` | `/api/auth/login` | Public | Authenticates admin and sets `session_token` HttpOnly cookie |
-| `POST` | `/api/auth/logout` | Public | Clears authentication cookie |
-| `GET` | `/api/students` | Protected | Retrieves student roster from `student_fee_core.students` |
-| `POST` | `/api/students` | Protected | Registers new student record with valid status enum |
-| `GET` | `/api/attendance` | Protected | Fetches student attendance records by student ID and month |
-| `POST` | `/api/attendance` | Protected | Toggles daily attendance status (upsert / delete) |
-| `POST` | `/api/billing/export` | Protected | Executes transactional fee calculation and streams `.xlsx` sheet |
-
----
-
-## 🐳 Docker & Deployment
-
-Build and run the production multi-stage Docker image:
-
-```bash
-docker build -t student-fee-management .
-docker run -p 8080:8080 --env-file .env student-fee-management
-```
-
-* **Backend Deployment**: Link repository to **Render Web Services** using the included `Dockerfile`.
-* **Frontend Deployment**: Deploy `frontend/` to **Vercel** with proxy path rules pointing to Render.
 
 ---
 

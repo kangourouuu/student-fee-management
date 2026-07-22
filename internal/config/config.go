@@ -12,6 +12,7 @@ type Config struct {
 	AdminUsername string
 	AdminPassword string
 	JWTSecret     string
+	EncryptionKey string
 }
 
 func LoadConfig() (*Config, error) {
@@ -42,11 +43,17 @@ func LoadConfig() (*Config, error) {
 		jwtSecret = "default-secret-key-change-in-prod"
 	}
 
+	encKey := os.Getenv("ENCRYPTION_KEY")
+	if encKey == "" {
+		encKey = "default-32-byte-encryption-key-for-aes256!"
+	}
+
 	return &Config{
 		Port:          port,
 		DatabaseURL:   dbURL,
 		AdminUsername: adminUser,
 		AdminPassword: adminPass,
 		JWTSecret:     jwtSecret,
+		EncryptionKey: encKey,
 	}, nil
 }
