@@ -4,10 +4,14 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile
     plan: free
-    healthCheckPath: /api/auth/login
+    healthCheckPath: /health
     envVars:
       - key: PORT
         value: 8080
+      - key: APP_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: https://student-fee-management-pied.vercel.app
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET

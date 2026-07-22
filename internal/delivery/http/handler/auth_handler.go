@@ -44,14 +44,23 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isProd := h.cfg.AppEnv == "production"
+	sameSite := http.SameSiteLaxMode
+	secure := false
+
+	if isProd {
+		sameSite = http.SameSiteNoneMode
+		secure = true
+	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    token,
 		Path:     "/",
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
+		Secure:   secure,
+		SameSite: sameSite,
 	})
 
 	middleware.LogEvent(http.StatusOK, "auth_handler", "User logged in successfully: "+req.Username)
@@ -63,13 +72,23 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	isProd := h.cfg.AppEnv == "production"
+	sameSite := http.SameSiteLaxMode
+	secure := false
+
+	if isProd {
+		sameSite = http.SameSiteNoneMode
+		secure = true
+	}
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    "",
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		Secure:   secure,
+		SameSite: sameSite,
 	})
 
 	middleware.LogEvent(http.StatusOK, "auth_handler", "User logged out successfully")

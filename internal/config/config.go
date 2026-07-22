@@ -7,12 +7,14 @@ import (
 )
 
 type Config struct {
-	Port          string
-	DatabaseURL   string
-	AdminUsername string
-	AdminPassword string
-	JWTSecret     string
-	EncryptionKey string
+	Port           string
+	DatabaseURL    string
+	AdminUsername  string
+	AdminPassword  string
+	JWTSecret      string
+	EncryptionKey  string
+	AppEnv         string // development | production
+	AllowedOrigins string
 }
 
 func LoadConfig() (*Config, error) {
@@ -48,12 +50,24 @@ func LoadConfig() (*Config, error) {
 		encKey = "default-32-byte-encryption-key-for-aes256!"
 	}
 
+	appEnv := os.Getenv("APP_ENV")
+	if appEnv == "" {
+		appEnv = "development"
+	}
+
+	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
+	if allowedOrigins == "" {
+		allowedOrigins = "http://localhost:4200,https://student-fee-management-pied.vercel.app"
+	}
+
 	return &Config{
-		Port:          port,
-		DatabaseURL:   dbURL,
-		AdminUsername: adminUser,
-		AdminPassword: adminPass,
-		JWTSecret:     jwtSecret,
-		EncryptionKey: encKey,
+		Port:           port,
+		DatabaseURL:    dbURL,
+		AdminUsername:  adminUser,
+		AdminPassword:  adminPass,
+		JWTSecret:      jwtSecret,
+		EncryptionKey:  encKey,
+		AppEnv:         appEnv,
+		AllowedOrigins: allowedOrigins,
 	}, nil
 }

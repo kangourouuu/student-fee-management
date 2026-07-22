@@ -11,12 +11,18 @@ func CORSMiddleware() func(http.Handler) http.Handler {
 		"https://student-fee-management-pied.vercel.app": true,
 		"http://localhost:4200":                           true,
 		"http://localhost:8080":                           true,
+		"http://127.0.0.1:4200":                           true,
 	}
 
-	customOrigin := os.Getenv("ALLOWED_ORIGIN")
-	if customOrigin != "" {
-		for _, o := range strings.Split(customOrigin, ",") {
-			allowedOrigins[strings.TrimSpace(o)] = true
+	for _, envKey := range []string{"ALLOWED_ORIGIN", "ALLOWED_ORIGINS"} {
+		val := os.Getenv(envKey)
+		if val != "" {
+			for _, o := range strings.Split(val, ",") {
+				trimmed := strings.TrimSpace(o)
+				if trimmed != "" {
+					allowedOrigins[trimmed] = true
+				}
+			}
 		}
 	}
 
