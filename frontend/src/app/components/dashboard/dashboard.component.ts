@@ -73,7 +73,7 @@ import { Student, StudentStatus } from '../../models/student.model';
               type="text" 
               class="neumorphic-inset" 
               style="width: 100%; padding-left: 2.75rem; outline: none; border: 1px solid rgba(255,255,255,0.6);" 
-              placeholder="Search by student name, ID or phone..."
+              placeholder="Search by student name, alias or phone..."
               [ngModel]="studentService.searchQuery()"
               (ngModelChange)="studentService.searchQuery.set($event)"
             />
@@ -120,7 +120,7 @@ import { Student, StudentStatus } from '../../models/student.model';
                 </div>
                 <div>
                   <h4 style="font-size: 1.1rem; font-weight: 700; color: #1e293b;">{{ student.name }}</h4>
-                  <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">ID: <span style="font-weight: 600; color: #475569;">#{{ student.student_id }}</span> | Phone: {{ student.phone || 'N/A' }}</p>
+                  <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">Alias: <span style="font-weight: 600; color: #475569;">{{ student.alias || student.student_id }}</span> | Phone: {{ student.phone || 'N/A' }}</p>
                 </div>
               </div>
 
@@ -147,13 +147,13 @@ import { Student, StudentStatus } from '../../models/student.model';
           
           <form (ngSubmit)="saveStudent()">
             <div style="margin-bottom: 1.25rem;">
-              <label style="display: block; font-weight: 600; color: #475569; margin-bottom: 0.4rem; font-size: 0.9rem;">Student ID Code</label>
-              <input type="text" class="neumorphic-inset" style="width: 100%; outline: none;" [(ngModel)]="newStudentId" name="student_id" placeholder="e.g. STU-08421" required />
+              <label style="display: block; font-weight: 600; color: #475569; margin-bottom: 0.4rem; font-size: 0.9rem;">Full Name</label>
+              <input type="text" class="neumorphic-inset" style="width: 100%; outline: none;" [(ngModel)]="newName" name="name" placeholder="e.g. Alex Johnson" required />
             </div>
 
             <div style="margin-bottom: 1.25rem;">
-              <label style="display: block; font-weight: 600; color: #475569; margin-bottom: 0.4rem; font-size: 0.9rem;">Full Name</label>
-              <input type="text" class="neumorphic-inset" style="width: 100%; outline: none;" [(ngModel)]="newName" name="name" placeholder="e.g. Alex Johnson" required />
+              <label style="display: block; font-weight: 600; color: #475569; margin-bottom: 0.4rem; font-size: 0.9rem;">Alias / Nickname</label>
+              <input type="text" class="neumorphic-inset" style="width: 100%; outline: none;" [(ngModel)]="newAlias" name="alias" placeholder="e.g. Johnny" />
             </div>
 
             <div style="margin-bottom: 1.25rem;">
@@ -183,8 +183,8 @@ import { Student, StudentStatus } from '../../models/student.model';
 })
 export class DashboardComponent implements OnInit {
   showNewModal = signal<boolean>(false);
-  newStudentId = '';
   newName = '';
+  newAlias = '';
   newPhone = '';
   newStatus: StudentStatus = 'enrolled';
 
@@ -199,11 +199,11 @@ export class DashboardComponent implements OnInit {
   }
 
   saveStudent() {
-    if (!this.newStudentId || !this.newName) return;
-    this.studentService.createStudent(this.newStudentId, this.newName, this.newPhone, this.newStatus).subscribe(() => {
+    if (!this.newName) return;
+    this.studentService.createStudent('', this.newName, this.newAlias, this.newPhone, this.newStatus).subscribe(() => {
       this.showNewModal.set(false);
-      this.newStudentId = '';
       this.newName = '';
+      this.newAlias = '';
       this.newPhone = '';
     });
   }

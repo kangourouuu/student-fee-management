@@ -30,7 +30,7 @@ import { Student } from '../../models/student.model';
                 {{ student()?.name?.charAt(0) }}
               </div>
               <h2 style="font-size: 1.4rem; font-weight: 700; color: #1e293b;">{{ student()?.name }}</h2>
-              <p style="color: #64748b; font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem;">ID: #{{ student()?.student_id }}</p>
+              <p style="color: #64748b; font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem;">Alias: {{ student()?.alias || student()?.student_id }}</p>
               <span [class]="'badge-' + student()?.status" style="display: inline-block; margin-top: 0.75rem;">
                 {{ student()?.status | titlecase }}
               </span>

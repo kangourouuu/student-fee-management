@@ -15,16 +15,19 @@ export class StudentService {
   selectedStudent = signal<Student | null>(null);
 
   filteredStudents = computed(() => {
+    const list = this.students();
     const query = this.searchQuery().toLowerCase().trim();
-    const filter = this.statusFilter();
-    
-    return this.students().filter((student) => {
-      const matchesSearch = 
-        student.name.toLowerCase().includes(query) ||
-        student.student_id.toLowerCase().includes(query) ||
-        (student.phone && student.phone.includes(query));
+    const status = this.statusFilter();
 
-      const matchesStatus = filter === 'all' || student.status === filter;
+    return list.filter((st) => {
+      const matchesSearch =
+        !query ||
+        st.name.toLowerCase().includes(query) ||
+        st.student_id.toLowerCase().includes(query) ||
+        (st.alias && st.alias.toLowerCase().includes(query)) ||
+        (st.phone && st.phone.toLowerCase().includes(query));
+
+      const matchesStatus = status === 'all' || st.status === status;
 
       return matchesSearch && matchesStatus;
     });
@@ -42,8 +45,14 @@ export class StudentService {
     );
   }
 
-  createStudent(student_id: string, name: string, phone: string, status: StudentStatus): Observable<any> {
-    return this.http.post<any>(this.apiUrl, { student_id, name, phone, status }).pipe(
+  createStudent(student_id: string, name: string, alias: string, phone: string, status: StudentStatus): Observable<any> {
+    return this.http.post<any>(this.apiUrl, {
+      student_id,
+      name,
+      alias,
+      phone,
+      status
+    }).pipe(
       tap((res) => {
         if (res.status === 'success' && res.response?.student) {
           this.students.update((list) => [res.response.student, ...list]);
@@ -52,7 +61,7 @@ export class StudentService {
     );
   }
 
-  selectStudent(student: Student | null) {
+  selectStudent(student: Student) {
     this.selectedStudent.set(student);
   }
 }

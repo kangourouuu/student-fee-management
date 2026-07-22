@@ -4,6 +4,7 @@ export interface Student {
   id: string;
   student_id: string;
   name: string;
+  alias?: string;
   phone?: string;
   status: StudentStatus;
   created_at?: string;

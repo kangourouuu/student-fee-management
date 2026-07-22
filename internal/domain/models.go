@@ -11,6 +11,7 @@ type Student struct {
 	ID        string        `json:"id"`
 	StudentID string        `json:"student_id"`
 	Name      string        `json:"name"`
+	Alias     string        `json:"alias,omitempty"`
 	Phone     string        `json:"phone,omitempty"`
 	Status    StudentStatus `json:"status"`
 	CreatedAt time.Time     `json:"created_at"`
@@ -22,6 +23,7 @@ type StudentDTO struct {
 	ID        string        `json:"id"`
 	StudentID string        `json:"student_id"`
 	Name      string        `json:"name"`
+	Alias     string        `json:"alias,omitempty"`
 	Phone     string        `json:"phone,omitempty"`
 	Status    StudentStatus `json:"status"`
 	CreatedAt time.Time     `json:"created_at"`
@@ -37,6 +39,7 @@ func (s *Student) ToDTO(maskPhone bool) StudentDTO {
 		ID:        s.ID,
 		StudentID: s.StudentID,
 		Name:      s.Name,
+		Alias:     s.Alias,
 		Phone:     phoneVal,
 		Status:    s.Status,
 		CreatedAt: s.CreatedAt,
@@ -73,12 +76,12 @@ type ExportBillingRequest struct {
 // Clean Architecture Domain Interfaces
 type StudentRepository interface {
 	GetStudents(ctx context.Context) ([]Student, error)
-	CreateStudent(ctx context.Context, studentID, name, phone string, status StudentStatus) (*Student, error)
+	CreateStudent(ctx context.Context, studentID, name, alias, phone string, status StudentStatus) (*Student, error)
 }
 
 type StudentUsecase interface {
 	GetStudents(ctx context.Context) ([]StudentDTO, error)
-	CreateStudent(ctx context.Context, studentID, name, phone string, status StudentStatus) (*StudentDTO, error)
+	CreateStudent(ctx context.Context, studentID, name, alias, phone string, status StudentStatus) (*StudentDTO, error)
 }
 
 type AttendanceRepository interface {

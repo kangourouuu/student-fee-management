@@ -33,8 +33,9 @@ func (h *StudentHandler) GetStudents(w http.ResponseWriter, r *http.Request) {
 }
 
 type CreateStudentRequest struct {
-	StudentID string               `json:"student_id"`
+	StudentID string               `json:"student_id,omitempty"`
 	Name      string               `json:"name"`
+	Alias     string               `json:"alias"`
 	Phone     string               `json:"phone"`
 	Status    domain.StudentStatus `json:"status"`
 }
@@ -47,9 +48,9 @@ func (h *StudentHandler) CreateStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.StudentID == "" || req.Name == "" {
-		middleware.LogEvent(http.StatusBadRequest, "student_handler", "Missing required fields student_id or name")
-		response.Error(w, http.StatusBadRequest, "student_id and name are required fields")
+	if req.Name == "" {
+		middleware.LogEvent(http.StatusBadRequest, "student_handler", "Missing required field: name")
+		response.Error(w, http.StatusBadRequest, "name is a required field")
 		return
 	}
 
@@ -63,7 +64,7 @@ func (h *StudentHandler) CreateStudent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	student, err := h.studentUsecase.CreateStudent(r.Context(), req.StudentID, req.Name, req.Phone, req.Status)
+	student, err := h.studentUsecase.CreateStudent(r.Context(), req.StudentID, req.Name, req.Alias, req.Phone, req.Status)
 	if err != nil {
 		middleware.LogEvent(http.StatusInternalServerError, "student_handler", "Failed to create student: "+err.Error())
 		response.Error(w, http.StatusInternalServerError, "Failed to register student")

@@ -21,11 +21,14 @@ CREATE TABLE IF NOT EXISTS student_fee_core.students (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id VARCHAR(50) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
-    phone VARCHAR(20),
+    alias VARCHAR(100),
+    phone VARCHAR(255),
     status student_fee_core.student_status DEFAULT 'enrolled' NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE student_fee_core.students ADD COLUMN IF NOT EXISTS alias VARCHAR(100);
 
 CREATE TABLE IF NOT EXISTS student_fee_core.attendance_records (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
