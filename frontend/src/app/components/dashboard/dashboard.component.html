@@ -1,0 +1,162 @@
+<div class="dashboard-layout">
+  <!-- Decorative Background Geometric Rings -->
+  <div class="ring-bg-1"></div>
+  <div class="ring-bg-2"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <div class="brand-header">
+        <div class="brand-badge">SF</div>
+        <div>
+          <h3 class="brand-title">Fee Center</h3>
+          <p class="brand-subtitle">Management Portal</p>
+        </div>
+      </div>
+
+      <nav class="nav-list">
+        <div class="clay-nav-item-active nav-item">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          Student Roster
+        </div>
+        <div class="nav-item-inactive nav-item" (click)="showNewModal.set(true)">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+          New Registration
+        </div>
+      </nav>
+    </div>
+
+    <div>
+      <button (click)="logout()" class="neumorphic-logout logout-btn">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Container -->
+  <main class="main-content">
+    
+    <!-- Header Row -->
+    <header class="header-row">
+      <div>
+        <h1 class="header-title">Student Roster</h1>
+        <p class="header-subtitle">Manage active student enrollments and fee schedules</p>
+      </div>
+
+      <button (click)="showNewModal.set(true)" class="neumorphic-button add-btn">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+        Add New Student
+      </button>
+    </header>
+
+    <!-- Controls / Search & Filters -->
+    <div class="neumorphic controls-bar">
+      <div class="search-box">
+        <input 
+          type="text" 
+          class="neumorphic-inset search-input" 
+          placeholder="Search by student name, alias or phone..."
+          [ngModel]="studentService.searchQuery()"
+          (ngModelChange)="studentService.searchQuery.set($event)"
+        />
+        <svg width="20" height="20" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24" class="search-icon">
+          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+
+      <div class="filter-box">
+        <label class="filter-label">Academic Status:</label>
+        <select 
+          class="neumorphic-inset filter-select"
+          [ngModel]="studentService.statusFilter()"
+          (ngModelChange)="studentService.statusFilter.set($event)"
+        >
+          <option value="all">All Statuses</option>
+          <option value="enrolled">Enrolled</option>
+          <option value="inactive">Inactive</option>
+          <option value="graduated">Graduated</option>
+          <option value="suspended">Suspended</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Roster Table / List -->
+    <div class="roster-list">
+      @if (studentService.filteredStudents().length === 0) {
+        <div class="neumorphic empty-state">
+          <p class="empty-title">No student records registered yet</p>
+          <p class="empty-subtitle">Click "Add New Student" above to register your first student.</p>
+        </div>
+      }
+
+      @for (student of studentService.filteredStudents(); track student.id) {
+        <div 
+          class="neumorphic student-card"
+          (click)="openStudentDetail(student)"
+        >
+          <div class="student-info">
+            <div class="avatar-circle">
+              {{ student.name.charAt(0).toUpperCase() }}
+            </div>
+            <div>
+              <h4 class="student-name">{{ student.name }}</h4>
+              <p class="student-meta">Alias: <span class="meta-highlight">{{ student.alias || student.student_id }}</span> | Phone: {{ student.phone || 'N/A' }}</p>
+            </div>
+          </div>
+
+          <div class="student-status-action">
+            <span [class]="'badge-' + student.status">
+              {{ student.status | titlecase }}
+            </span>
+
+            <div class="action-arrow">
+              <svg width="18" height="18" fill="none" stroke="#475569" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </main>
+</div>
+
+<!-- Registration Modal -->
+@if (showNewModal()) {
+  <div class="modal-backdrop">
+    <div class="neu-flat modal-card">
+      <h3 class="modal-title">Register New Student</h3>
+      
+      <form (ngSubmit)="saveStudent()">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="newName" name="name" placeholder="e.g. Alex Johnson" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Alias / Nickname</label>
+          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="newAlias" name="alias" placeholder="e.g. Johnny" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="text" class="neumorphic-inset form-input" [(ngModel)]="newPhone" name="phone" placeholder="e.g. +1 555-0192" />
+        </div>
+
+        <div class="form-group-lg">
+          <label class="form-label">Academic Status</label>
+          <select class="neumorphic-inset form-input" [(ngModel)]="newStatus" name="status">
+            <option value="enrolled">Enrolled</option>
+            <option value="inactive">Inactive</option>
+            <option value="graduated">Graduated</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="clay-btn" (click)="showNewModal.set(false)">Cancel</button>
+          <button type="submit" class="neumorphic-button">Register Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

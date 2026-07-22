@@ -9,82 +9,8 @@ import { QR_CODE_BASE64 } from '../../constants/qr-code.constant';
   selector: 'app-fee-modal',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.35); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1.5rem;">
-      <div class="neu-flat" style="width: 100%; max-width: 480px; padding: 2.25rem; position: relative; max-height: 92vh; overflow-y: auto;">
-        
-        <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-          <div>
-            <h3 style="font-size: 1.4rem; font-weight: 700; color: #1e293b;">Fee Statement Export</h3>
-            <p style="color: #64748b; font-size: 0.85rem; margin-top: 0.2rem;">Billing for {{ student.name }} (Nickname: {{ student.alias || 'N/A' }})</p>
-          </div>
-          <button (click)="close.emit()" class="neu-button" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; font-size: 1.2rem; color: #64748b;">
-            ×
-          </button>
-        </div>
-
-        <!-- Form Fields -->
-        <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 1.5rem;">
-          <div>
-            <label style="display: block; font-weight: 600; color: #475569; margin-bottom: 0.4rem; font-size: 0.9rem;">Fee Per Session</label>
-            <input 
-              type="number" 
-              class="neu-inset" 
-              style="width: 100%; padding: 0.85rem 1rem; border: none; outline: none; font-size: 1.1rem; font-weight: 700; color: #0284c7;"
-              [ngModel]="feePerSession()"
-              (ngModelChange)="feePerSession.set($event)"
-              min="0"
-            />
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div>
-              <label style="display: block; font-weight: 600; color: #475569; margin-bottom: 0.4rem; font-size: 0.85rem;">Start Date</label>
-              <input type="date" class="neu-inset" style="width: 100%; padding: 0.65rem 0.85rem; border: none; outline: none; font-size: 0.9rem;" [(ngModel)]="startDate" />
-            </div>
-
-            <div>
-              <label style="display: block; font-weight: 600; color: #475569; margin-bottom: 0.4rem; font-size: 0.85rem;">End Date</label>
-              <input type="date" class="neu-inset" style="width: 100%; padding: 0.65rem 0.85rem; border: none; outline: none; font-size: 0.9rem;" [(ngModel)]="endDate" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Calculation Panel -->
-        <div class="neu-inset" style="padding: 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <p style="font-size: 0.8rem; font-weight: 600; color: #64748b;">Attended Days: <span style="color: #1e293b; font-weight: 700;">{{ attendedDays }} days</span></p>
-            <p style="font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-top: 0.25rem;">Total Calculated Fee</p>
-          </div>
-          <div style="font-size: 1.75rem; font-weight: 800; color: #0284c7;">
-            {{ totalFee() }}
-          </div>
-        </div>
-
-        <!-- Scan to Pay Custom QR Code Module -->
-        <div class="neu-button" style="padding: 1.25rem; margin-bottom: 1.5rem; text-align: center; display: flex; flex-direction: column; align-items: center; background: #e0f2fe;">
-          <p style="font-size: 0.95rem; font-weight: 700; color: #0369a1; margin-bottom: 0.75rem;">Scan to Pay</p>
-          <div style="width: 180px; height: 248px; border-radius: 1rem; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: center; background: #ffffff;">
-            <img [src]="qrCodeImage" alt="Scan to Pay QR Code" style="width: 100%; height: 100%; object-fit: fill; display: block;" />
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-          <button (click)="close.emit()" class="clay-btn" style="flex: 1; min-width: 90px; text-align: center; padding: 0.85rem;">
-            Cancel
-          </button>
-          <button (click)="onExportPNG()" class="clay-btn" style="flex: 1.5; min-width: 130px; background: #e0f2fe; color: #0284c7; font-weight: 700; text-align: center; padding: 0.85rem;">
-            Save as PNG
-          </button>
-          <button (click)="onExport()" class="neumorphic-button" style="flex: 2; min-width: 150px; text-align: center; padding: 0.85rem; font-size: 0.95rem; font-weight: 700;">
-            Export Excel (.xlsx)
-          </button>
-        </div>
-      </div>
-    </div>
-  `
+  templateUrl: './fee-modal.component.html',
+  styleUrls: ['./fee-modal.component.scss']
 })
 export class FeeModalComponent implements OnInit {
   @Input({ required: true }) student!: Student;

@@ -1,0 +1,73 @@
+<div class="modal-backdrop">
+  <div class="neu-flat modal-card">
+    
+    <!-- Header -->
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title">Fee Statement Export</h3>
+        <p class="modal-subtitle">Billing for {{ student.name }} (Nickname: {{ student.alias || 'N/A' }})</p>
+      </div>
+      <button (click)="close.emit()" class="neu-button close-btn">
+        ×
+      </button>
+    </div>
+
+    <!-- Form Fields -->
+    <div class="form-fields">
+      <div>
+        <label class="form-label">Fee Per Session</label>
+        <input 
+          type="number" 
+          class="neu-inset fee-input" 
+          [ngModel]="feePerSession()"
+          (ngModelChange)="feePerSession.set($event)"
+          min="0"
+        />
+      </div>
+
+      <div class="dates-grid">
+        <div>
+          <label class="date-label">Start Date</label>
+          <input type="date" class="neu-inset date-input" [(ngModel)]="startDate" />
+        </div>
+
+        <div>
+          <label class="date-label">End Date</label>
+          <input type="date" class="neu-inset date-input" [(ngModel)]="endDate" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Calculation Panel -->
+    <div class="neu-inset calc-panel">
+      <div>
+        <p class="days-text">Attended Days: <span class="days-bold">{{ attendedDays }} days</span></p>
+        <p class="calc-label">Total Calculated Fee</p>
+      </div>
+      <div class="total-fee-val">
+        {{ totalFee() }}
+      </div>
+    </div>
+
+    <!-- Scan to Pay Custom QR Code Module -->
+    <div class="neu-button qr-panel">
+      <p class="qr-title">Scan to Pay</p>
+      <div class="qr-container">
+        <img [src]="qrCodeImage" alt="Scan to Pay QR Code" class="qr-img" />
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions-row">
+      <button (click)="close.emit()" class="clay-btn cancel-btn">
+        Cancel
+      </button>
+      <button (click)="onExportPNG()" class="clay-btn png-btn">
+        Save as PNG
+      </button>
+      <button (click)="onExport()" class="neumorphic-button excel-btn">
+        Export Excel (.xlsx)
+      </button>
+    </div>
+  </div>
+</div>

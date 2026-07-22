@@ -1,0 +1,118 @@
+<div class="detail-layout">
+  <!-- Clay Decorative Blobs -->
+  <div class="blob-1"></div>
+  <div class="blob-2"></div>
+
+  <!-- Clay Sidebar -->
+  <aside class="clay-card sidebar">
+    <div>
+      <button (click)="goBack()" class="clay-btn back-btn">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> Back to Roster
+      </button>
+
+      @if (student()) {
+        <div class="student-profile">
+          <div class="avatar-large">
+            {{ student()?.name?.charAt(0) }}
+          </div>
+          <h2 class="profile-name">{{ student()?.name }}</h2>
+          <p class="profile-alias">Alias: {{ student()?.alias || student()?.student_id }}</p>
+          <span [class]="'badge-' + student()?.status" class="status-badge">
+            {{ student()?.status | titlecase }}
+          </span>
+        </div>
+      }
+
+      <div class="nav-container">
+        <div class="clay-nav-item-active nav-item">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Attendance Tracker
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <button (click)="showFeeModal.set(true)" class="clay-btn export-btn">
+        Generate Fee Export
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Calendar Grid Area -->
+  <main class="main-area">
+    
+    <!-- Header -->
+    <div class="clay-card header-card">
+      <div>
+        <h2 class="header-title">Attendance Calendar</h2>
+        <p class="header-subtitle">Click any tile to toggle attendance day status</p>
+      </div>
+
+      <div class="month-controls">
+        <button class="clay-btn month-btn" (click)="changeMonth(-1)">‹</button>
+        <span class="month-label">{{ currentMonthLabel() }}</span>
+        <button class="clay-btn month-btn" (click)="changeMonth(1)">›</button>
+      </div>
+    </div>
+
+    <!-- 2-Column Summary Metrics -->
+    <div class="summary-grid">
+      <div class="clay-card metric-card">
+        <p class="metric-title">Attended Sessions</p>
+        <h3 class="metric-value value-primary">
+          {{ attendanceService.totalAttendedDays() }} days
+        </h3>
+      </div>
+
+      <div class="clay-card metric-card">
+        <p class="metric-title">Attendance Rate</p>
+        <h3 class="metric-value value-success">
+          {{ attendanceRate() }}%
+        </h3>
+      </div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="clay-card calendar-card">
+      <div class="weekdays-grid">
+        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+
+      <div class="days-grid">
+        @for (day of calendarDays(); track day.dateStr) {
+          <div 
+            [class]="day.isAttended ? 'clay-cell-inset' : 'clay-cell'"
+            class="day-cell"
+            (click)="toggleDay(day.dateStr, !day.isAttended)"
+          >
+            <div class="cell-header">
+              <span [style.font-weight]="day.isAttended ? '700' : '600'" [style.color]="day.isAttended ? '#0369a1' : '#64748b'">
+                {{ day.dayNum }}
+              </span>
+              @if (day.isAttended) {
+                <div class="attended-dot"></div>
+              }
+            </div>
+            
+            <div class="cell-status">
+              @if (day.isAttended) {
+                <span class="status-attended">Attended</span>
+              } @else {
+                <span class="status-off">Off</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Fee Export Modal -->
+@if (showFeeModal() && student()) {
+  <app-fee-modal 
+    [student]="student()!"
+    [attendedDays]="attendanceService.totalAttendedDays()"
+    (close)="showFeeModal.set(false)"
+  ></app-fee-modal>
+}

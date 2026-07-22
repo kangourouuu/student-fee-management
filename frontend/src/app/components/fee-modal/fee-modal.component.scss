@@ -1,0 +1,197 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1.5rem;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 2.25rem;
+  position: relative;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.modal-subtitle {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+}
+
+.close-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  font-size: 1.2rem;
+  color: #64748b;
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.fee-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: none;
+  outline: none;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0284c7;
+}
+
+.dates-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.date-label {
+  display: block;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.date-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: none;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.calc-panel {
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.days-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.days-bold {
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.calc-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 0.25rem;
+}
+
+.total-fee-val {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0284c7;
+}
+
+.qr-panel {
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #e0f2fe;
+}
+
+.qr-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0369a1;
+  margin-bottom: 0.75rem;
+}
+
+.qr-container {
+  width: 180px;
+  height: 248px;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+}
+
+.qr-img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+}
+
+.actions-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cancel-btn {
+  flex: 1;
+  min-width: 90px;
+  text-align: center;
+  padding: 0.85rem;
+}
+
+.png-btn {
+  flex: 1.5;
+  min-width: 130px;
+  background: #e0f2fe;
+  color: #0284c7;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.85rem;
+}
+
+.excel-btn {
+  flex: 2;
+  min-width: 150px;
+  text-align: center;
+  padding: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
