@@ -56,6 +56,7 @@ func main() {
 
 	r := chi.NewRouter()
 
+	r.Use(middleware.CORSMiddleware())
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(middleware.SeniorLogger("api_router"))
 

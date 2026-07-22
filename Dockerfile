@@ -1,12 +1,14 @@
 # Multi-Stage Build for Go Backend API Server
 FROM golang:1.24-alpine AS builder
 
+ENV GOTOOLCHAIN=auto
+
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o main ./cmd/server
 
 # Execution Stage
 FROM alpine:latest
