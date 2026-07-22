@@ -52,6 +52,22 @@ CREATE TABLE IF NOT EXISTS student_fee_core.fee_statements (
 );
 
 ALTER TABLE student_fee_core.fee_statements DROP COLUMN IF EXISTS fee_per_session;
+
+CREATE OR REPLACE VIEW student_fee_core.v_fee_statements AS
+SELECT 
+    fs.id,
+    fs.student_id,
+    s.student_id AS student_code,
+    s.name AS student_name,
+    COALESCE(s.alias, s.name) AS nickname,
+    s.fee_per_session,
+    fs.billing_start_date,
+    fs.billing_end_date,
+    fs.total_days,
+    fs.total_fee,
+    fs.created_at
+FROM student_fee_core.fee_statements fs
+JOIN student_fee_core.students s ON fs.student_id = s.id;
 `
 
 func InitDB(ctx context.Context, dbURL string) (*pgxpool.Pool, error) {
