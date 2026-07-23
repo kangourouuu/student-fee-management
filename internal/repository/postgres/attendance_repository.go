@@ -31,6 +31,35 @@ func (r *attendanceRepository) GetAttendance(ctx context.Context, studentID stri
 		return []domain.AttendanceRecord{}, nil
 	}
 
+	if studentID == "" || studentID == "all" {
+		query := `SELECT a.id, s.student_id, TO_CHAR(a.record_date, 'YYYY-MM-DD'), a.is_present, a.created_at
+		          FROM student_fee_core.attendance_records a
+		          JOIN student_fee_core.students s ON a.student_id = s.id
+		          WHERE a.is_present = TRUE`
+		args := []interface{}{}
+		if month != "" {
+			query += " AND TO_CHAR(a.record_date, 'YYYY-MM') = $1"
+			args = append(args, month)
+		}
+		query += " ORDER BY a.record_date ASC"
+
+		rows, err := r.pool.Query(ctx, query, args...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch all attendance records: %w", err)
+		}
+		defer rows.Close()
+
+		records := make([]domain.AttendanceRecord, 0)
+		for rows.Next() {
+			var rec domain.AttendanceRecord
+			if err := rows.Scan(&rec.ID, &rec.StudentID, &rec.RecordDate, &rec.IsPresent, &rec.CreatedAt); err != nil {
+				return nil, fmt.Errorf("failed to scan attendance record: %w", err)
+			}
+			records = append(records, rec)
+		}
+		return records, nil
+	}
+
 	internalUUID, err := r.resolveStudentUUID(ctx, studentID)
 	if err != nil {
 		return []domain.AttendanceRecord{}, nil

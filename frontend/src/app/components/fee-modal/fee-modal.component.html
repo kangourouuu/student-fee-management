@@ -4,7 +4,7 @@
     <!-- Header -->
     <div class="modal-header">
       <div>
-        <h3 class="modal-title">Xuất Báo cáo Học phí</h3>
+        <h3 class="modal-title">Phiếu học phí</h3>
         <p class="modal-subtitle">Bảng kê học phí: {{ student.name }} (Biệt danh: {{ student.alias || 'N/A' }})</p>
       </div>
       <button (click)="close.emit()" class="neu-button close-btn">
@@ -56,6 +56,10 @@
     <div class="neu-inset calc-panel" style="flex-direction: column; align-items: stretch; gap: 0.75rem;">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <p class="days-text">Số buổi đi học (Tháng {{ selectedMonth }}/{{ selectedYear }}): <span class="days-bold">{{ attendedDaysCount() }} buổi</span></p>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <p class="days-text">Học phí 1 buổi: <span class="days-bold">{{ feePerSession }}</span></p>
         <div class="total-fee-val">{{ totalFee() }}</div>
       </div>
       

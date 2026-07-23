@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, map } from 'rxjs';
 import { AttendanceRecord } from '../models/student.model';
 import { environment } from '../../environments/environment';
 
@@ -42,6 +42,17 @@ export class AttendanceService {
           });
           this.attendanceMap.set(map);
         }
+      })
+    );
+  }
+
+  fetchAllAttendance(month: string): Observable<AttendanceRecord[]> {
+    return this.http.get<any>(`${this.apiUrl}?student_id=all&month=${month}`, { withCredentials: true }).pipe(
+      map((res) => {
+        if (res.status === 'success' && Array.isArray(res.response?.records)) {
+          return res.response.records as AttendanceRecord[];
+        }
+        return [];
       })
     );
   }

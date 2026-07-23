@@ -15,10 +15,22 @@
       </div>
 
       <nav class="nav-list">
-        <div class="clay-nav-item-active nav-item">
+        <div 
+          [class]="activeTab() === 'roster' ? 'clay-nav-item-active nav-item' : 'nav-item-inactive nav-item'"
+          (click)="activeTab.set('roster')"
+        >
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
           Danh sách Học sinh
         </div>
+
+        <div 
+          [class]="activeTab() === 'stats' ? 'clay-nav-item-active nav-item' : 'nav-item-inactive nav-item'"
+          (click)="switchToStatsTab()"
+        >
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Thống kê học phí
+        </div>
+
         <div class="nav-item-inactive nav-item" (click)="showNewModal.set(true)">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
           Thêm học sinh mới
@@ -37,90 +49,205 @@
   <!-- Main Content Container -->
   <main class="main-content">
     
-    <!-- Header Row -->
-    <header class="header-row">
-      <div>
-        <h1 class="header-title">Danh sách Học sinh</h1>
-        <p class="header-subtitle">Quản lý thông tin học sinh, điểm danh và học phí hàng tháng</p>
-      </div>
-
-      <button (click)="showNewModal.set(true)" class="neumorphic-button add-btn">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
-        Thêm học sinh mới
-      </button>
-    </header>
-
-    <!-- Controls / Search & Filters -->
-    <div class="neumorphic controls-bar">
-      <div class="search-box">
-        <input 
-          type="text" 
-          class="neumorphic-inset search-input" 
-          placeholder="Tìm kiếm theo tên, biệt danh hoặc số điện thoại..."
-          [ngModel]="studentService.searchQuery()"
-          (ngModelChange)="studentService.searchQuery.set($event)"
-        />
-        <svg width="20" height="20" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24" class="search-icon">
-          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-      </div>
-
-      <div class="filter-box">
-        <label class="filter-label">Trạng thái:</label>
-        <select 
-          class="neumorphic-inset filter-select"
-          [ngModel]="studentService.statusFilter()"
-          (ngModelChange)="studentService.statusFilter.set($event)"
-        >
-          <option value="all">Tất cả trạng thái</option>
-          <option value="enrolled">Đang học</option>
-          <option value="inactive">Nghỉ học</option>
-          <option value="graduated">Tốt nghiệp</option>
-          <option value="suspended">Tạm dừng</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Roster Table / List -->
-    <div class="roster-list">
-      @if (studentService.filteredStudents().length === 0) {
-        <div class="neumorphic empty-state">
-          <p class="empty-title">Chưa có dữ liệu học sinh nào</p>
-          <p class="empty-subtitle">Nhấn "Thêm học sinh mới" ở trên để đăng ký học sinh đầu tiên.</p>
+    <!-- TAB 1: Danh sách Học sinh (Roster) -->
+    @if (activeTab() === 'roster') {
+      <!-- Header Row -->
+      <header class="header-row">
+        <div>
+          <h1 class="header-title">Danh sách Học sinh</h1>
+          <p class="header-subtitle">Quản lý thông tin học sinh, điểm danh và học phí hàng tháng</p>
         </div>
-      }
 
-      @for (student of studentService.filteredStudents(); track student.id) {
-        <div 
-          class="neumorphic student-card"
-          (click)="openStudentDetail(student)"
-        >
-          <div class="student-info">
-            <div class="avatar-circle">
-              {{ student.name.charAt(0).toUpperCase() }}
+        <button (click)="showNewModal.set(true)" class="neumorphic-button add-btn">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+          Thêm học sinh mới
+        </button>
+      </header>
+
+      <!-- Controls / Search & Filters -->
+      <div class="neumorphic controls-bar">
+        <div class="search-box">
+          <input 
+            type="text" 
+            class="neumorphic-inset search-input" 
+            placeholder="Tìm kiếm theo tên, biệt danh hoặc số điện thoại..."
+            [ngModel]="studentService.searchQuery()"
+            (ngModelChange)="studentService.searchQuery.set($event)"
+          />
+          <svg width="20" height="20" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24" class="search-icon">
+            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+
+        <div class="filter-box">
+          <label class="filter-label">Trạng thái:</label>
+          <select 
+            class="neumorphic-inset filter-select"
+            [ngModel]="studentService.statusFilter()"
+            (ngModelChange)="studentService.statusFilter.set($event)"
+          >
+            <option value="all">Tất cả trạng thái</option>
+            <option value="enrolled">Đang học</option>
+            <option value="inactive">Nghỉ học</option>
+            <option value="graduated">Tốt nghiệp</option>
+            <option value="suspended">Tạm dừng</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Roster Table / List -->
+      <div class="roster-list">
+        @if (studentService.filteredStudents().length === 0) {
+          <div class="neumorphic empty-state">
+            <p class="empty-title">Chưa có dữ liệu học sinh nào</p>
+            <p class="empty-subtitle">Nhấn "Thêm học sinh mới" ở trên để đăng ký học sinh đầu tiên.</p>
+          </div>
+        }
+
+        @for (student of studentService.filteredStudents(); track student.id) {
+          <div 
+            class="neumorphic student-card"
+            (click)="openStudentDetail(student)"
+          >
+            <div class="student-info">
+              <div class="avatar-circle">
+                {{ student.name.charAt(0).toUpperCase() }}
+              </div>
+              <div>
+                <h4 class="student-name">{{ student.name }}</h4>
+                <p class="student-meta">Biệt danh: <span class="meta-highlight">{{ student.alias || student.student_id }}</span> | SĐT: {{ student.phone || 'N/A' }} | Học phí: <span class="meta-highlight">{{ student.fee_per_session || 0 }}</span>/buổi</p>
+              </div>
             </div>
-            <div>
-              <h4 class="student-name">{{ student.name }}</h4>
-              <p class="student-meta">Biệt danh: <span class="meta-highlight">{{ student.alias || student.student_id }}</span> | SĐT: {{ student.phone || 'N/A' }} | Học phí: <span class="meta-highlight">{{ student.fee_per_session || 0 }}</span>/buổi</p>
+
+            <div class="student-status-action">
+              <span [class]="'badge-' + student.status">
+                {{ getStatusLabel(student.status) }}
+              </span>
+
+              <button class="clay-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" (click)="openEditModal($event, student)">
+                Sửa
+              </button>
+
+              <div class="action-arrow">
+                <svg width="18" height="18" fill="none" stroke="#475569" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+              </div>
             </div>
           </div>
+        }
+      </div>
+    }
 
-          <div class="student-status-action">
-            <span [class]="'badge-' + student.status">
-              {{ getStatusLabel(student.status) }}
-            </span>
+    <!-- TAB 2: Thống kê học phí (Fee Statistics) -->
+    @if (activeTab() === 'stats') {
+      <!-- Header Row with Month & Year Selectors -->
+      <header class="header-row">
+        <div>
+          <h1 class="header-title">Thống kê Học phí</h1>
+          <p class="header-subtitle">Tổng hợp học phí và số buổi đi học của tất cả học sinh theo tháng</p>
+        </div>
 
-            <button class="clay-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" (click)="openEditModal($event, student)">
-              Sửa
-            </button>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <select 
+            class="neu-inset form-input" 
+            [ngModel]="statsMonth()" 
+            (ngModelChange)="statsMonth.set($event); loadStatsData()" 
+            style="padding: 0.65rem 1rem; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 600; cursor: pointer;"
+          >
+            <option [value]="1">Tháng 1</option>
+            <option [value]="2">Tháng 2</option>
+            <option [value]="3">Tháng 3</option>
+            <option [value]="4">Tháng 4</option>
+            <option [value]="5">Tháng 5</option>
+            <option [value]="6">Tháng 6</option>
+            <option [value]="7">Tháng 7</option>
+            <option [value]="8">Tháng 8</option>
+            <option [value]="9">Tháng 9</option>
+            <option [value]="10">Tháng 10</option>
+            <option [value]="11">Tháng 11</option>
+            <option [value]="12">Tháng 12</option>
+          </select>
 
-            <div class="action-arrow">
-              <svg width="18" height="18" fill="none" stroke="#475569" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          <input 
+            type="number" 
+            class="neu-inset form-input" 
+            [ngModel]="statsYear()" 
+            (ngModelChange)="statsYear.set($event); loadStatsData()" 
+            min="2020" 
+            max="2030" 
+            style="padding: 0.65rem 1rem; border-radius: 8px; border: 1px solid #cbd5e1; width: 100px; font-weight: 600;" 
+          />
+        </div>
+      </header>
+
+      <!-- Overall Summary Metric Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+        <div style="padding: 1.5rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px;">
+          <p style="font-size: 0.85rem; font-weight: 600; color: #64748b;">Tổng thu Học phí (Tháng {{ statsMonth() }}/{{ statsYear() }})</p>
+          <h3 style="font-size: 2rem; font-weight: 800; color: #0284c7; margin-top: 0.4rem;">
+            {{ totalStatsFee() }}
+          </h3>
+        </div>
+
+        <div style="padding: 1.5rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px;">
+          <p style="font-size: 0.85rem; font-weight: 600; color: #64748b;">Tổng số buổi học (Tất cả HS)</p>
+          <h3 style="font-size: 2rem; font-weight: 800; color: #15803d; margin-top: 0.4rem;">
+            {{ totalStatsSessions() }} buổi
+          </h3>
+        </div>
+
+        <div style="padding: 1.5rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px;">
+          <p style="font-size: 0.85rem; font-weight: 600; color: #64748b;">Tổng số Học sinh</p>
+          <h3 style="font-size: 2rem; font-weight: 800; color: #475569; margin-top: 0.4rem;">
+            {{ studentService.students().length }} học sinh
+          </h3>
+        </div>
+      </div>
+
+      <!-- Student Statistics Roster / Table -->
+      <div class="roster-list">
+        @if (studentStats().length === 0) {
+          <div class="empty-state">
+            <p class="empty-title">Chưa có dữ liệu học sinh nào</p>
+          </div>
+        }
+
+        @for (item of studentStats(); track item.student.id) {
+          <div 
+            class="student-card" 
+            style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 1.25rem 1.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;"
+          >
+            <div class="student-info" style="display: flex; align-items: center; gap: 1.25rem;">
+              <div class="avatar-circle">
+                {{ item.student.name.charAt(0).toUpperCase() }}
+              </div>
+              <div>
+                <h4 class="student-name">{{ item.student.name }}</h4>
+                <p class="student-meta">
+                  Biệt danh: <span class="meta-highlight">{{ item.student.alias || item.student.student_id }}</span> |
+                  Đơn giá: <span class="meta-highlight">{{ item.feePerSession }}</span>/buổi |
+                  Số buổi đi học: <span class="meta-highlight" style="color: #0284c7; font-weight: 700;">{{ item.attendedSessions }} buổi</span>
+                </p>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+              <div style="text-align: right;">
+                <p style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Tổng học phí</p>
+                <p style="font-size: 1.3rem; font-weight: 800; color: #0284c7;">{{ item.totalFee }}</p>
+              </div>
+
+              <button 
+                class="clay-btn" 
+                style="padding: 0.5rem 1rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid #bae6fd; background: #e0f2fe; color: #0284c7; font-weight: 700; cursor: pointer;" 
+                (click)="openFeeModalForStudent(item.student)"
+              >
+                Xuất Phiếu học phí
+              </button>
             </div>
           </div>
-        </div>
-      }
-    </div>
+        }
+      </div>
+    }
   </main>
 </div>
 
@@ -214,4 +341,14 @@
       </form>
     </div>
   </div>
+}
+
+<!-- Fee Modal Triggered from Fee Statistics Tab -->
+@if (showFeeModal() && selectedFeeStudent()) {
+  <app-fee-modal
+    [student]="selectedFeeStudent()!"
+    [initialMonth]="statsMonth()"
+    [initialYear]="statsYear()"
+    (close)="showFeeModal.set(false)"
+  ></app-fee-modal>
 }

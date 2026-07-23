@@ -108,11 +108,32 @@ export class FeeModalComponent implements OnInit {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Bao_Cao_Hoc_Phi_${this.student.alias || this.student.student_id}_Thang_${this.selectedMonth}_${this.selectedYear}.xlsx`;
+      a.download = `Phieu_Hoc_Phi_${this.student.alias || this.student.student_id}_Thang_${this.selectedMonth}_${this.selectedYear}.xlsx`;
       a.click();
       window.URL.revokeObjectURL(url);
       this.close.emit();
     });
+  }
+
+  private wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+    return lines;
   }
 
   onExportPNG() {
@@ -123,9 +144,27 @@ export class FeeModalComponent implements OnInit {
     const numRows = chips.length === 0 ? 1 : Math.ceil(chips.length / 7);
     const chipsHeight = numRows * (chipH + gap);
 
-    // Dynamic Summary Container Height to fit chips exactly
-    const summaryBoxHeight = 35 + chipsHeight + 80;
-    const canvasHeight = Math.max(920, 225 + summaryBoxHeight + 75 + 248 + 120);
+    // Summary Box height includes Attended Days chips + Total Days line + Fee Per Session line + Total Fee line
+    const summaryBoxHeight = 35 + chipsHeight + 105;
+    const summaryBoxY = 225;
+
+    // Dummy canvas to calculate note text wrapping lines
+    const dummyCanvas = document.createElement('canvas');
+    const dummyCtx = dummyCanvas.getContext('2d');
+    const noteText = this.teacherNote.trim() || 'Chưa có ghi chú thêm.';
+    let noteLines: string[] = [noteText];
+    if (dummyCtx) {
+      dummyCtx.font = '13px "Be Vietnam Pro", sans-serif';
+      noteLines = this.wrapText(dummyCtx, noteText, 440);
+    }
+
+    const noteLineHeight = 18;
+    const noteBoxHeight = Math.max(65, 32 + (noteLines.length * noteLineHeight));
+    const noteBoxY = summaryBoxY + summaryBoxHeight + 20;
+
+    const qrTitleY = noteBoxY + noteBoxHeight + 28;
+    const qrImgY = qrTitleY + 15;
+    const canvasHeight = Math.max(920, qrImgY + 248 + 50);
 
     const scale = 2;
     const canvas = document.createElement('canvas');
@@ -153,10 +192,10 @@ export class FeeModalComponent implements OnInit {
       ctx.fillRect(30, 30, 540, canvasHeight - 60);
     }
 
-    // Title
+    // Title: PHIẾU HỌC PHÍ
     ctx.fillStyle = '#0284c7';
     ctx.font = 'bold 24px "Be Vietnam Pro", sans-serif';
-    ctx.fillText('BÁO CÁO HỌC PHÍ HỌC SINH', 60, 80);
+    ctx.fillText('PHIẾU HỌC PHÍ', 60, 80);
 
     // Divider Line
     ctx.strokeStyle = '#e2e8f0';
@@ -183,8 +222,7 @@ export class FeeModalComponent implements OnInit {
     ctx.fillStyle = '#0284c7';
     ctx.fillText(this.monthYearLabel, 220, 201);
 
-    // Summary & Attended Day Chips Container Box (Dynamic Height)
-    const summaryBoxY = 225;
+    // Summary & Attended Day Chips Container Box
     ctx.fillStyle = '#f8fafc';
     ctx.fillRect(60, summaryBoxY, 480, summaryBoxHeight);
     ctx.strokeStyle = '#e2e8f0';
@@ -243,47 +281,47 @@ export class FeeModalComponent implements OnInit {
     ctx.font = 'bold 15px "Be Vietnam Pro", sans-serif';
     ctx.fillText(`${this.attendedDaysCount()} buổi`, 360, summaryTextY);
 
+    ctx.fillStyle = '#475569';
+    ctx.font = '15px "Be Vietnam Pro", sans-serif';
+    ctx.fillText('Học phí 1 buổi:', 75, summaryTextY + 28);
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 15px "Be Vietnam Pro", sans-serif';
+    ctx.fillText(`${this.feePerSession}`, 360, summaryTextY + 28);
+
     ctx.fillStyle = '#0284c7';
     ctx.font = 'bold 16px "Be Vietnam Pro", sans-serif';
-    ctx.fillText('Tổng học phí thanh toán:', 75, summaryTextY + 30);
-    ctx.fillText(`${this.totalFee()}`, 360, summaryTextY + 30);
+    ctx.fillText('Tổng học phí thanh toán:', 75, summaryTextY + 58);
+    ctx.fillText(`${this.totalFee()}`, 360, summaryTextY + 58);
 
-    // Teacher Feedback Note Box (Positioned dynamically below summary box)
-    const noteBoxY = summaryBoxY + summaryBoxHeight + 20;
+    // Dynamic Teacher Feedback Note Box
     ctx.fillStyle = '#fffbeb';
-    ctx.fillRect(60, noteBoxY, 480, 75);
+    ctx.fillRect(60, noteBoxY, 480, noteBoxHeight);
     ctx.strokeStyle = '#fef3c7';
-    ctx.strokeRect(60, noteBoxY, 480, 75);
+    ctx.strokeRect(60, noteBoxY, 480, noteBoxHeight);
 
     ctx.fillStyle = '#92400e';
     ctx.font = 'bold 13px "Be Vietnam Pro", sans-serif';
-    ctx.fillText('Nhận xét của Giáo viên:', 75, noteBoxY + 22);
+    ctx.fillText('Nhận xét của Giáo viên:', 75, noteBoxY + 20);
 
     ctx.fillStyle = '#78350f';
     ctx.font = '13px "Be Vietnam Pro", sans-serif';
-    const noteText = this.teacherNote || 'Chưa có ghi chú thêm.';
-    if (noteText.length > 55) {
-      ctx.fillText(noteText.substring(0, 55), 75, noteBoxY + 44);
-      ctx.fillText(noteText.substring(55, 110), 75, noteBoxY + 62);
-    } else {
-      ctx.fillText(noteText, 75, noteBoxY + 48);
+    for (let i = 0; i < noteLines.length; i++) {
+      ctx.fillText(noteLines[i], 75, noteBoxY + 20 + 20 + (i * noteLineHeight));
     }
 
     // Scan to Pay label (Positioned dynamically below teacher note box)
-    const qrTitleY = noteBoxY + 75 + 30;
     ctx.fillStyle = '#0369a1';
     ctx.font = 'bold 15px "Be Vietnam Pro", sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('Quét mã thanh toán', 300, qrTitleY);
 
-    const qrImgY = qrTitleY + 15;
     const img = new Image();
     img.onload = () => {
       ctx.drawImage(img, 210, qrImgY, 180, 248);
       const dataUrl = canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `Bao_Cao_Hoc_Phi_${this.student.alias || this.student.student_id}_Thang_${this.selectedMonth}_${this.selectedYear}.png`;
+      a.download = `Phieu_Hoc_Phi_${this.student.alias || this.student.student_id}_Thang_${this.selectedMonth}_${this.selectedYear}.png`;
       a.click();
     };
 
@@ -291,7 +329,7 @@ export class FeeModalComponent implements OnInit {
       const dataUrl = canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `Bao_Cao_Hoc_Phi_${this.student.alias || this.student.student_id}_Thang_${this.selectedMonth}_${this.selectedYear}.png`;
+      a.download = `Phieu_Hoc_Phi_${this.student.alias || this.student.student_id}_Thang_${this.selectedMonth}_${this.selectedYear}.png`;
       a.click();
     };
 

@@ -22,9 +22,7 @@ func (h *AttendanceHandler) GetAttendance(w http.ResponseWriter, r *http.Request
 	month := r.URL.Query().Get("month")
 
 	if studentID == "" {
-		middleware.LogEvent(http.StatusBadRequest, "attendance_handler", "Missing required query param: student_id")
-		response.Error(w, http.StatusBadRequest, "student_id query parameter is required")
-		return
+		studentID = "all"
 	}
 
 	records, err := h.attendanceUsecase.GetAttendance(r.Context(), studentID, month)
