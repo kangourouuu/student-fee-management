@@ -5,6 +5,7 @@ import { BillingService } from '../../services/billing.service';
 import { AttendanceService } from '../../services/attendance.service';
 import { Student } from '../../models/student.model';
 import { QR_CODE_BASE64 } from '../../constants/qr-code.constant';
+import { formatVND } from '../../utils/currency.util';
 
 @Component({
   selector: 'app-fee-modal',
@@ -69,6 +70,10 @@ export class FeeModalComponent implements OnInit {
     this.onMonthChange();
   }
 
+  formatMoney(amount: number): string {
+    return formatVND(amount);
+  }
+
   onMonthChange() {
     const m = Number(this.selectedMonth);
     const y = Number(this.selectedYear);
@@ -128,6 +133,25 @@ export class FeeModalComponent implements OnInit {
       let currentLine = '';
 
       for (const word of words) {
+        if (ctx.measureText(word).width > maxWidth) {
+          if (currentLine) {
+            lines.push(currentLine);
+            currentLine = '';
+          }
+
+          let subWord = '';
+          for (const char of word) {
+            if (ctx.measureText(subWord + char).width > maxWidth) {
+              lines.push(subWord);
+              subWord = char;
+            } else {
+              subWord += char;
+            }
+          }
+          currentLine = subWord;
+          continue;
+        }
+
         const testLine = currentLine ? `${currentLine} ${word}` : word;
         const metrics = ctx.measureText(testLine);
         if (metrics.width > maxWidth && currentLine) {
@@ -294,12 +318,12 @@ export class FeeModalComponent implements OnInit {
     ctx.fillText('Học phí 1 buổi:', 75, summaryTextY + 28);
     ctx.fillStyle = '#1e293b';
     ctx.font = 'bold 15px "Be Vietnam Pro", sans-serif';
-    ctx.fillText(`${this.feePerSession}`, 360, summaryTextY + 28);
+    ctx.fillText(this.formatMoney(this.feePerSession), 360, summaryTextY + 28);
 
     ctx.fillStyle = '#0284c7';
     ctx.font = 'bold 16px "Be Vietnam Pro", sans-serif';
     ctx.fillText('Tổng học phí thanh toán:', 75, summaryTextY + 58);
-    ctx.fillText(`${this.totalFee()}`, 360, summaryTextY + 58);
+    ctx.fillText(this.formatMoney(this.totalFee()), 360, summaryTextY + 58);
 
     // Dynamic Teacher Feedback Note Box
     ctx.fillStyle = '#fffbeb';

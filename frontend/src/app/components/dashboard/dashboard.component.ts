@@ -7,6 +7,7 @@ import { AttendanceService } from '../../services/attendance.service';
 import { AuthService } from '../../services/auth.service';
 import { FeeModalComponent } from '../fee-modal/fee-modal.component';
 import { Student, StudentStatus, AttendanceRecord } from '../../models/student.model';
+import { formatVND } from '../../utils/currency.util';
 
 export interface StudentStatItem {
   student: Student;
@@ -92,6 +93,10 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.studentService.fetchStudents().subscribe();
+  }
+
+  formatMoney(amount: number): string {
+    return formatVND(amount);
   }
 
   switchToStatsTab() {

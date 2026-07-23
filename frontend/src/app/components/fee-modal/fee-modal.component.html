@@ -59,8 +59,8 @@
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <p class="days-text">Học phí 1 buổi: <span class="days-bold">{{ feePerSession }}</span></p>
-        <div class="total-fee-val">{{ totalFee() }}</div>
+        <p class="days-text">Học phí 1 buổi: <span class="days-bold">{{ formatMoney(feePerSession) }}</span></p>
+        <div class="total-fee-val" style="font-size: 1.4rem;">{{ formatMoney(totalFee()) }}</div>
       </div>
       
       <!-- Attended Days List with DD/MM Chips -->

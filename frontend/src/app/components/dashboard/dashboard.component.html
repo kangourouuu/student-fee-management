@@ -115,7 +115,7 @@
               </div>
               <div>
                 <h4 class="student-name">{{ student.name }}</h4>
-                <p class="student-meta">Biệt danh: <span class="meta-highlight">{{ student.alias || student.student_id }}</span> | SĐT: {{ student.phone || 'N/A' }} | Học phí: <span class="meta-highlight">{{ student.fee_per_session || 0 }}</span>/buổi</p>
+                <p class="student-meta">Biệt danh: <span class="meta-highlight">{{ student.alias || student.student_id }}</span> | SĐT: {{ student.phone || 'N/A' }} | Học phí: <span class="meta-highlight">{{ formatMoney(student.fee_per_session || 0) }}</span>/buổi</p>
               </div>
             </div>
 
@@ -188,7 +188,7 @@
         <div style="padding: 1.5rem; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px;">
           <p style="font-size: 0.85rem; font-weight: 600; color: #64748b;">Tổng thu Học phí (Tháng {{ statsMonth() }}/{{ statsYear() }})</p>
           <h3 style="font-size: 2rem; font-weight: 800; color: #0284c7; margin-top: 0.4rem;">
-            {{ totalStatsFee() }}
+            {{ formatMoney(totalStatsFee()) }}
           </h3>
         </div>
 
@@ -228,7 +228,7 @@
                 <h4 class="student-name">{{ item.student.name }}</h4>
                 <p class="student-meta">
                   Biệt danh: <span class="meta-highlight">{{ item.student.alias || item.student.student_id }}</span> |
-                  Đơn giá: <span class="meta-highlight">{{ item.feePerSession }}</span>/buổi |
+                  Đơn giá: <span class="meta-highlight">{{ formatMoney(item.feePerSession) }}</span>/buổi |
                   Số buổi đi học: <span class="meta-highlight" style="color: #0284c7; font-weight: 700;">{{ item.attendedSessions }} buổi</span>
                 </p>
               </div>
@@ -237,7 +237,7 @@
             <div style="display: flex; align-items: center; gap: 1rem;">
               <div style="text-align: right; margin-right: 0.5rem;">
                 <p style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Tổng học phí</p>
-                <p style="font-size: 1.3rem; font-weight: 800; color: #0284c7;">{{ item.totalFee }}</p>
+                <p style="font-size: 1.3rem; font-weight: 800; color: #0284c7;">{{ formatMoney(item.totalFee) }}</p>
               </div>
 
               <button 
@@ -287,7 +287,7 @@
 
         <div class="form-group">
           <label class="form-label">Học phí 1 buổi</label>
-          <input type="number" class="neumorphic-inset form-input" [(ngModel)]="newFee" name="fee" placeholder="Ví dụ: 50000" min="0" />
+          <input type="number" class="neumorphic-inset form-input" [(ngModel)]="newFee" name="fee" placeholder="Ví dụ: 200" min="0" />
         </div>
 
         <div class="form-group-lg">
