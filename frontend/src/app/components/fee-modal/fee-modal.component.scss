@@ -137,6 +137,7 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  gap: 0.5rem;
 }
 
 .total-fee-row {
@@ -147,24 +148,35 @@
   border-top: 1px dashed #cbd5e1;
   padding-top: 0.75rem;
   margin-top: 0.25rem;
+  gap: 0.5rem;
 }
 
 .days-text {
   font-size: 0.85rem;
   font-weight: 600;
   color: #64748b;
+  white-space: nowrap;
 }
 
 .days-bold {
   color: #1e293b;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.total-fee-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0284c7;
+  white-space: nowrap;
 }
 
 .total-fee-val {
-  font-size: 1.4rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #0284c7;
+  white-space: nowrap;
 }
 
 .chips-flex {
