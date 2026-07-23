@@ -156,6 +156,20 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  deleteStudentFromEditModal() {
+    const st = this.editStudentData;
+    if (!st.id && !st.student_id) return;
+    const confirmMsg = `Bạn có chắc chắn muốn xóa học sinh "${st.name}" (Biệt danh: ${st.alias || st.student_id}) không? Dữ liệu của học sinh này sẽ bị xóa vĩnh viễn.`;
+    if (confirm(confirmMsg)) {
+      this.studentService.deleteStudent(st.student_id || st.id).subscribe(() => {
+        this.showEditModal.set(false);
+        if (this.activeTab() === 'stats') {
+          this.loadStatsData();
+        }
+      });
+    }
+  }
+
   getStatusLabel(status: StudentStatus): string {
     switch (status) {
       case 'enrolled': return 'Đang học';

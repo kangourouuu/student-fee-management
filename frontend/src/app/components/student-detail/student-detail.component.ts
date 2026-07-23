@@ -110,6 +110,17 @@ export class StudentDetailComponent implements OnInit {
     }
   }
 
+  deleteStudent() {
+    const st = this.student();
+    if (!st) return;
+    const confirmMsg = `Bạn có chắc chắn muốn xóa học sinh "${st.name}" (Biệt danh: ${st.alias || st.student_id}) không? Tất cả dữ liệu của học sinh này sẽ bị xóa vĩnh viễn.`;
+    if (confirm(confirmMsg)) {
+      this.studentService.deleteStudent(st.student_id || st.id).subscribe(() => {
+        this.router.navigate(['/dashboard']);
+      });
+    }
+  }
+
   goBack() {
     this.router.navigate(['/dashboard']);
   }

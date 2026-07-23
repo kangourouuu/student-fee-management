@@ -124,11 +124,11 @@
                 {{ getStatusLabel(student.status) }}
               </span>
 
-              <button class="clay-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px;" (click)="openEditModal($event, student)">
+              <button class="clay-btn" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; border-radius: 8px; font-weight: 600;" (click)="openEditModal($event, student)">
                 Sửa
               </button>
 
-              <button class="clay-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px; color: #b91c1c; border-color: #fca5a5; background: #fef2f2;" (click)="deleteStudent($event, student)">
+              <button class="clay-btn" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; border-radius: 8px; color: #dc2626; border: 1px solid #fca5a5; background: #fef2f2; font-weight: 700;" (click)="deleteStudent($event, student)">
                 Xóa
               </button>
 
@@ -250,7 +250,7 @@
 
               <button 
                 class="clay-btn" 
-                style="padding: 0.5rem 0.8rem; font-size: 0.85rem; border-radius: 8px; color: #b91c1c; border-color: #fca5a5; background: #fef2f2; font-weight: 600; cursor: pointer;" 
+                style="padding: 0.5rem 0.8rem; font-size: 0.85rem; border-radius: 8px; color: #dc2626; border: 1px solid #fca5a5; background: #fef2f2; font-weight: 700; cursor: pointer;" 
                 (click)="deleteStudent($event, item.student)"
               >
                 Xóa
@@ -346,9 +346,15 @@
           </select>
         </div>
 
-        <div class="modal-actions">
-          <button type="button" class="clay-btn" (click)="showEditModal.set(false)">Hủy bỏ</button>
-          <button type="submit" class="neumorphic-button">Lưu Thay đổi</button>
+        <div class="modal-actions" style="display: flex; gap: 0.75rem; justify-content: space-between; align-items: center;">
+          <button type="button" class="clay-btn" style="background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700;" (click)="deleteStudentFromEditModal()">
+            Xóa học sinh
+          </button>
+
+          <div style="display: flex; gap: 0.75rem;">
+            <button type="button" class="clay-btn" (click)="showEditModal.set(false)">Hủy bỏ</button>
+            <button type="submit" class="neumorphic-button">Lưu Thay đổi</button>
+          </div>
         </div>
       </form>
     </div>
