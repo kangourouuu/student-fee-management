@@ -116,22 +116,30 @@ export class FeeModalComponent implements OnInit {
   }
 
   private wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
-    const words = text.split(' ');
+    const rawParagraphs = text.split('\n');
     const lines: string[] = [];
-    let currentLine = '';
 
-    for (const word of words) {
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        currentLine = testLine;
+    for (const paragraph of rawParagraphs) {
+      if (paragraph.trim() === '') {
+        lines.push('');
+        continue;
       }
-    }
-    if (currentLine) {
-      lines.push(currentLine);
+      const words = paragraph.split(' ');
+      let currentLine = '';
+
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) {
+        lines.push(currentLine);
+      }
     }
     return lines;
   }
@@ -155,10 +163,10 @@ export class FeeModalComponent implements OnInit {
     let noteLines: string[] = [noteText];
     if (dummyCtx) {
       dummyCtx.font = '13px "Be Vietnam Pro", sans-serif';
-      noteLines = this.wrapText(dummyCtx, noteText, 440);
+      noteLines = this.wrapText(dummyCtx, noteText, 430);
     }
 
-    const noteLineHeight = 18;
+    const noteLineHeight = 20;
     const noteBoxHeight = Math.max(65, 32 + (noteLines.length * noteLineHeight));
     const noteBoxY = summaryBoxY + summaryBoxHeight + 20;
 
