@@ -125,3 +125,28 @@ func (h *StudentHandler) UpdateStudent(w http.ResponseWriter, r *http.Request) {
 		"student": student,
 	})
 }
+
+func (h *StudentHandler) DeleteStudent(w http.ResponseWriter, r *http.Request) {
+	studentIDParam := chi.URLParam(r, "id")
+	if studentIDParam == "" {
+		studentIDParam = r.URL.Query().Get("id")
+	}
+
+	if studentIDParam == "" {
+		middleware.LogEvent(http.StatusBadRequest, "student_handler", "Missing student id parameter")
+		response.Error(w, http.StatusBadRequest, "Student id is required")
+		return
+	}
+
+	if err := h.studentUsecase.DeleteStudent(r.Context(), studentIDParam); err != nil {
+		middleware.LogEvent(http.StatusInternalServerError, "student_handler", "Failed to delete student: "+err.Error())
+		response.Error(w, http.StatusInternalServerError, "Failed to delete student: "+err.Error())
+		return
+	}
+
+	middleware.LogEvent(http.StatusOK, "student_handler", "Deleted student: "+studentIDParam)
+	response.Success(w, http.StatusOK, map[string]string{
+		"message": "Student deleted successfully",
+		"id":      studentIDParam,
+	})
+}

@@ -80,6 +80,7 @@ func main() {
 		protected.Post("/api/students", studentHandler.CreateStudent)
 		protected.Put("/api/students", studentHandler.UpdateStudent)
 		protected.Put("/api/students/{id}", studentHandler.UpdateStudent)
+		protected.Delete("/api/students/{id}", studentHandler.DeleteStudent)
 
 		protected.Get("/api/attendance", attendanceHandler.GetAttendance)
 		protected.Post("/api/attendance", attendanceHandler.ToggleAttendance)

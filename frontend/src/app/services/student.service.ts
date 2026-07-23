@@ -79,6 +79,19 @@ export class StudentService {
     );
   }
 
+  deleteStudent(studentId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${studentId}`, { withCredentials: true }).pipe(
+      tap((res) => {
+        if (res.status === 'success') {
+          this.students.update((list) => list.filter(s => s.id !== studentId && s.student_id !== studentId));
+          if (this.selectedStudent()?.id === studentId || this.selectedStudent()?.student_id === studentId) {
+            this.selectedStudent.set(null);
+          }
+        }
+      })
+    );
+  }
+
   selectStudent(student: Student) {
     this.selectedStudent.set(student);
   }

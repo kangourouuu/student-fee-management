@@ -144,6 +144,18 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  deleteStudent(event: Event, student: Student) {
+    event.stopPropagation();
+    const confirmMsg = `Bạn có chắc chắn muốn xóa học sinh "${student.name}" (Biệt danh: ${student.alias || student.student_id}) không? Dữ liệu của học sinh này sẽ bị xóa vĩnh viễn.`;
+    if (confirm(confirmMsg)) {
+      this.studentService.deleteStudent(student.student_id || student.id).subscribe(() => {
+        if (this.activeTab() === 'stats') {
+          this.loadStatsData();
+        }
+      });
+    }
+  }
+
   getStatusLabel(status: StudentStatus): string {
     switch (status) {
       case 'enrolled': return 'Đang học';

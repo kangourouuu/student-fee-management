@@ -124,8 +124,12 @@
                 {{ getStatusLabel(student.status) }}
               </span>
 
-              <button class="clay-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" (click)="openEditModal($event, student)">
+              <button class="clay-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px;" (click)="openEditModal($event, student)">
                 Sửa
+              </button>
+
+              <button class="clay-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px; color: #b91c1c; border-color: #fca5a5; background: #fef2f2;" (click)="deleteStudent($event, student)">
+                Xóa
               </button>
 
               <div class="action-arrow">
@@ -230,8 +234,8 @@
               </div>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 1.5rem;">
-              <div style="text-align: right;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <div style="text-align: right; margin-right: 0.5rem;">
                 <p style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Tổng học phí</p>
                 <p style="font-size: 1.3rem; font-weight: 800; color: #0284c7;">{{ item.totalFee }}</p>
               </div>
@@ -242,6 +246,14 @@
                 (click)="openFeeModalForStudent(item.student)"
               >
                 Xuất Phiếu học phí
+              </button>
+
+              <button 
+                class="clay-btn" 
+                style="padding: 0.5rem 0.8rem; font-size: 0.85rem; border-radius: 8px; color: #b91c1c; border-color: #fca5a5; background: #fef2f2; font-weight: 600; cursor: pointer;" 
+                (click)="deleteStudent($event, item.student)"
+              >
+                Xóa
               </button>
             </div>
           </div>

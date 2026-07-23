@@ -126,3 +126,21 @@ func (r *studentRepository) UpdateStudent(ctx context.Context, id, name, alias, 
 	st.Phone = phone
 	return &st, nil
 }
+
+func (r *studentRepository) DeleteStudent(ctx context.Context, id string) error {
+	if r.pool == nil {
+		return fmt.Errorf("database connection pool is not initialized")
+	}
+
+	query := `DELETE FROM student_fee_core.students WHERE id::text = $1 OR student_id = $1`
+	cmd, err := r.pool.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete student: %w", err)
+	}
+
+	if cmd.RowsAffected() == 0 {
+		return fmt.Errorf("student not found for ID: %s", id)
+	}
+
+	return nil
+}

@@ -43,3 +43,7 @@ func (u *studentUsecase) UpdateStudent(ctx context.Context, id, name, alias, pho
 	dto := st.ToDTO(true)
 	return &dto, nil
 }
+
+func (u *studentUsecase) DeleteStudent(ctx context.Context, id string) error {
+	return u.repo.DeleteStudent(ctx, id)
+}

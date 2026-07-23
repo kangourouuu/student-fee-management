@@ -82,12 +82,14 @@ type StudentRepository interface {
 	GetStudents(ctx context.Context) ([]Student, error)
 	CreateStudent(ctx context.Context, studentID, name, alias, phone string, feePerSession float64, status StudentStatus) (*Student, error)
 	UpdateStudent(ctx context.Context, id, name, alias, phone string, feePerSession float64, status StudentStatus) (*Student, error)
+	DeleteStudent(ctx context.Context, id string) error
 }
 
 type StudentUsecase interface {
 	GetStudents(ctx context.Context) ([]StudentDTO, error)
 	CreateStudent(ctx context.Context, studentID, name, alias, phone string, feePerSession float64, status StudentStatus) (*StudentDTO, error)
 	UpdateStudent(ctx context.Context, id, name, alias, phone string, feePerSession float64, status StudentStatus) (*StudentDTO, error)
+	DeleteStudent(ctx context.Context, id string) error
 }
 
 type AttendanceRepository interface {
