@@ -322,7 +322,7 @@ export class FeeModalComponent implements OnInit {
 
     ctx.fillStyle = '#0284c7';
     ctx.font = 'bold 16px "Be Vietnam Pro", sans-serif';
-    ctx.fillText('Tổng học phí thanh toán:', 75, summaryTextY + 58);
+    ctx.fillText('Thanh toán:', 75, summaryTextY + 58);
     ctx.fillText(this.formatMoney(this.totalFee()), 360, summaryTextY + 58);
 
     // Dynamic Teacher Feedback Note Box
@@ -341,11 +341,11 @@ export class FeeModalComponent implements OnInit {
       ctx.fillText(noteLines[i], 75, noteBoxY + 20 + 20 + (i * noteLineHeight));
     }
 
-    // Scan to Pay label (Positioned dynamically below teacher note box)
+    // Payment Code title (Positioned dynamically below teacher note box)
     ctx.fillStyle = '#0369a1';
     ctx.font = 'bold 15px "Be Vietnam Pro", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Quét mã thanh toán', 300, qrTitleY);
+    ctx.fillText('Mã thanh toán', 300, qrTitleY);
 
     const img = new Image();
     img.onload = () => {
