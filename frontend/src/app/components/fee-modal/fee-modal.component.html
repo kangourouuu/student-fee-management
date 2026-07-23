@@ -17,7 +17,7 @@
       <!-- Month & Year Selector -->
       <div class="dates-grid">
         <div>
-          <label class="date-label">Tháng thanh toán</label>
+          <label class="date-label">Tháng</label>
           <select class="neu-inset date-input" [(ngModel)]="selectedMonth" (change)="onMonthChange()">
             <option [value]="1">Tháng 1 (Jan)</option>
             <option [value]="2">Tháng 2 (Feb)</option>
@@ -68,7 +68,7 @@
 
       <!-- Row 3: Total Fee (Compact 1-row layout) -->
       <div class="total-fee-row">
-        <span class="total-fee-title">Thanh toán:</span>
+        <span class="total-fee-title">Tổng học phí:</span>
         <div class="total-fee-val">{{ formatMoney(totalFee()) }}</div>
       </div>
       

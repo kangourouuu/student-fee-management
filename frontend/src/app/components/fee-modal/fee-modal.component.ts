@@ -250,7 +250,7 @@ export class FeeModalComponent implements OnInit {
     ctx.fillText(this.student.alias || 'N/A', 220, 168);
 
     ctx.fillStyle = '#475569';
-    ctx.fillText('Tháng thanh toán:', 60, 201);
+    ctx.fillText('Tháng:', 60, 201);
     ctx.fillStyle = '#0284c7';
     ctx.fillText(this.monthYearLabel, 220, 201);
 
@@ -322,7 +322,7 @@ export class FeeModalComponent implements OnInit {
 
     ctx.fillStyle = '#0284c7';
     ctx.font = 'bold 16px "Be Vietnam Pro", sans-serif';
-    ctx.fillText('Thanh toán:', 75, summaryTextY + 58);
+    ctx.fillText('Tổng học phí:', 75, summaryTextY + 58);
     ctx.fillText(this.formatMoney(this.totalFee()), 360, summaryTextY + 58);
 
     // Dynamic Teacher Feedback Note Box
