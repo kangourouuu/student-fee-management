@@ -53,24 +53,27 @@
     </div>
 
     <!-- Calculation Panel -->
-    <div class="neu-inset calc-panel" style="flex-direction: column; align-items: stretch; gap: 0.75rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <p class="days-text">Số buổi đi học (Tháng {{ selectedMonth }}/{{ selectedYear }}):</p>
+    <div class="calc-panel">
+      <!-- Row 1: Attended Days Count -->
+      <div class="calc-row">
+        <span class="days-text">Số buổi đi học (Tháng {{ selectedMonth }}/{{ selectedYear }}):</span>
         <span class="days-bold">{{ attendedDaysCount() }} buổi</span>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <p class="days-text">Học phí 1 buổi:</p>
+      <!-- Row 2: Fee Per Session -->
+      <div class="calc-row">
+        <span class="days-text">Học phí 1 buổi:</span>
         <span class="days-bold">{{ formatMoney(feePerSession) }}</span>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #cbd5e1; padding-top: 0.6rem; margin-top: 0.2rem;">
-        <p class="days-text" style="font-size: 0.95rem; font-weight: 700; color: #0284c7;">Tổng học phí thanh toán:</p>
-        <div class="total-fee-val" style="font-size: 1.5rem; font-weight: 800; color: #0284c7;">{{ formatMoney(totalFee()) }}</div>
+      <!-- Row 3: Total Fee (Positioned strictly below Row 2) -->
+      <div class="total-fee-row">
+        <span class="days-text" style="font-size: 0.95rem; font-weight: 700; color: #0284c7;">Tổng học phí thanh toán:</span>
+        <div class="total-fee-val">{{ formatMoney(totalFee()) }}</div>
       </div>
       
       <!-- Attended Days List with DD/MM Chips -->
-      <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.6rem;">
+      <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.6rem; margin-top: 0.25rem;">
         <p style="font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 0.4rem;">Các ngày đi học:</p>
         <div class="chips-flex">
           @if (attendedDayChips().length === 0) {

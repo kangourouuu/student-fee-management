@@ -123,16 +123,34 @@
   padding: 1.25rem;
   margin-bottom: 1.5rem;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
   border-radius: 8px;
   box-shadow: none;
   border: 1px solid #cbd5e1;
   background: #f8fafc;
 }
 
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.total-fee-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 0.75rem;
+  margin-top: 0.25rem;
+}
+
 .days-text {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #64748b;
 }
@@ -140,10 +158,11 @@
 .days-bold {
   color: #1e293b;
   font-weight: 700;
+  font-size: 0.9rem;
 }
 
 .total-fee-val {
-  font-size: 1.75rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: #0284c7;
 }
