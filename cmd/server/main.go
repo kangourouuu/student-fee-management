@@ -70,11 +70,12 @@ func main() {
 
 	// Public Auth Endpoints
 	r.Post("/api/auth/login", authHandler.Login)
+	r.Post("/api/auth/refresh", authHandler.Refresh)
 	r.Post("/api/auth/logout", authHandler.Logout)
 
 	// Protected Endpoints
 	r.Group(func(protected chi.Router) {
-		protected.Use(middleware.RequireAuth(cfg.JWTSecret))
+		protected.Use(middleware.RequireAuth(cfg.JWTSecret, cfg.AppEnv))
 
 		protected.Get("/api/students", studentHandler.GetStudents)
 		protected.Post("/api/students", studentHandler.CreateStudent)

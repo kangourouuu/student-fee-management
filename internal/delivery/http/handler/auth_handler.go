@@ -37,10 +37,84 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := middleware.GenerateToken(req.Username, h.cfg.JWTSecret)
+	accessToken, refreshToken, err := middleware.GenerateTokenPair(req.Username, h.cfg.JWTSecret)
 	if err != nil {
-		middleware.LogEvent(http.StatusInternalServerError, "auth_handler", "Failed to generate token: "+err.Error())
+		middleware.LogEvent(http.StatusInternalServerError, "auth_handler", "Failed to generate tokens: "+err.Error())
 		response.Error(w, http.StatusInternalServerError, "Failed to create session")
+		return
+	}
+
+	isProd := h.cfg.AppEnv == "production"
+	sameSite := http.SameSiteLaxMode
+	secure := false
+
+	if isProd {
+		sameSite = http.SameSiteNoneMode
+		secure = true
+	}
+
+	// 1. Session / Access Token Cookie (5 Minutes, HttpOnly)
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_token",
+		Value:    accessToken,
+		Path:     "/",
+		Expires:  time.Now().Add(5 * time.Minute),
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    accessToken,
+		Path:     "/",
+		Expires:  time.Now().Add(5 * time.Minute),
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+
+	// 2. Refresh Token Cookie (7 Days, HttpOnly - Never exposed to JS/Headers)
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		Path:     "/",
+		Expires:  time.Now().Add(7 * 24 * time.Hour),
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+
+	middleware.LogEvent(http.StatusOK, "auth_handler", "User logged in successfully: "+req.Username)
+	response.Success(w, http.StatusOK, map[string]interface{}{
+		"message":  "Login successful",
+		"username": req.Username,
+	})
+}
+
+func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
+	var refreshTokenStr string
+	if cookie, err := r.Cookie("refresh_token"); err == nil {
+		refreshTokenStr = cookie.Value
+	}
+
+	if refreshTokenStr == "" {
+		middleware.LogEvent(http.StatusUnauthorized, "auth_handler", "Missing refresh token cookie")
+		response.Error(w, http.StatusUnauthorized, "Missing refresh token")
+		return
+	}
+
+	claims, err := middleware.ValidateToken(refreshTokenStr, h.cfg.JWTSecret)
+	if err != nil || claims.TokenType != "refresh" {
+		middleware.LogEvent(http.StatusUnauthorized, "auth_handler", "Invalid or expired refresh token")
+		response.Error(w, http.StatusUnauthorized, "Invalid or expired refresh token")
+		return
+	}
+
+	newAccess, newRefresh, err := middleware.GenerateTokenPair(claims.Username, h.cfg.JWTSecret)
+	if err != nil {
+		middleware.LogEvent(http.StatusInternalServerError, "auth_handler", "Failed to refresh token pair: "+err.Error())
+		response.Error(w, http.StatusInternalServerError, "Failed to refresh tokens")
 		return
 	}
 
@@ -55,19 +129,38 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
-		Value:    token,
+		Value:    newAccess,
 		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().Add(5 * time.Minute),
 		HttpOnly: true,
 		Secure:   secure,
 		SameSite: sameSite,
 	})
 
-	middleware.LogEvent(http.StatusOK, "auth_handler", "User logged in successfully: "+req.Username)
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    newAccess,
+		Path:     "/",
+		Expires:  time.Now().Add(5 * time.Minute),
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    newRefresh,
+		Path:     "/",
+		Expires:  time.Now().Add(7 * 24 * time.Hour),
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+
+	middleware.LogEvent(http.StatusOK, "auth_handler", "Refreshed token pair for user: "+claims.Username)
 	response.Success(w, http.StatusOK, map[string]interface{}{
-		"message":  "Login successful",
-		"username": req.Username,
-		"token":    token,
+		"message":  "Token refreshed successfully",
+		"username": claims.Username,
 	})
 }
 
@@ -82,7 +175,27 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+
+	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
 		Value:    "",
 		Path:     "/",
 		Expires:  time.Unix(0, 0),

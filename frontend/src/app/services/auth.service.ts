@@ -29,6 +29,10 @@ export class AuthService {
     );
   }
 
+  refreshToken(): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/refresh`, {}, { withCredentials: true });
+  }
+
   logout(): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/logout`, {}, { withCredentials: true }).pipe(
       tap(() => {
