@@ -1,0 +1,4 @@
+interface:
+  display_name: "Student Fee Frontend"
+  short_description: "Change and verify the Angular frontend"
+  default_prompt: "Use $change-student-fee-frontend to implement and verify a frontend change."

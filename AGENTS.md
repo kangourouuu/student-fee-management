@@ -1,93 +1,70 @@
 # Student Fee Management System
-## Agent Handover & Architecture Specifications (AGENTS.md)
 
-This specification details the technical stack, architecture mapping, and database structure for the Student Fee Management System. It is designed to guide autonomous coding agents in implementing the frontend, backend, and database components.
+## Scope and sources of truth
 
----
+These instructions apply to the whole repository. A nested `AGENTS.md` takes precedence below its directory.
 
-## 1. Technical Stack Directory
+- Treat checked-in manifests and source as executable truth.
+- Treat `DESIGN.md`, `PLAN.md`, and `README.md` as product intent and context.
+- Do not claim a documented upgrade is complete until manifests and code implement it. Current manifests declare Go 1.22 and Angular 19 even though some project documents describe Go 1.24 and Angular 21.
+- Keep work scoped to the user's request and preserve unrelated worktree changes.
 
-### Frontend Client
-*   **Framework**: Angular 21 (Zoneless architecture utilizing Signals for reactive forms and state management).
-*   **Styling**: Custom CSS/SCSS containing Neumorphic styles. Primary accent: Pastel Baby Blue (`#E1F0FA`).
-*   **Hosting**: Vercel (Edge network hosting).
+## Architecture invariants
 
-### Backend API Server
-*   **Language**: Go 1.22+
-*   **Routing**: Standard library `net/http` or lightweight Go router (e.g., `go-chi/chi` or `gin-gonic/gin`).
-*   **Excel Engine**: `github.com/xuri/excelize/v2` (for dynamic `.xlsx` processing).
-*   **Hosting**: Render (Web Service deployed via a multi-stage Docker build).
+- Keep backend dependencies flowing from HTTP delivery to use cases to domain contracts and repository implementations.
+- Keep all application database objects inside `student_fee_core`.
+- Use `pgx/v5` for PostgreSQL, `chi/v5` for routing, and `excelize/v2` for XLSX.
+- Preserve the API envelope: `{status:success|error,response:...}`.
+- Authenticate with the JWT HttpOnly cookie. Do not move tokens into browser storage or expose secrets to Angular.
+- Encrypt student phone data at rest and expose only the intended masked form.
+- Preserve signal-based frontend state, zoneless configuration, and the neumorphic/claymorphic baby-blue design.
 
-### Database Engine
-*   **Server**: PostgreSQL 16.
-*   **Go Driver**: `github.com/jackc/pgx/v5` (for high-performance PostgreSQL connections).
-*   **Schema**: Contained entirely within a dedicated `student_fee_core` application schema.
-*   **Hosting**: Neon (Serverless Postgres with native connection pooling).
+## Repository map
 
----
+- `cmd/server`: server entrypoint, dependency injection, and routes.
+- `internal/domain`: entities, DTOs, enums, and contracts.
+- `internal/usecase`: business rules and orchestration.
+- `internal/repository/postgres`: pgx persistence and bootstrap schema.
+- `internal/delivery/http`: handlers, middleware, and response helpers.
+- `internal/pkg`: shared implementation packages such as cryptography.
+- `frontend`: Angular client.
+- `migrations`: ordered PostgreSQL migrations.
 
-## 2. System Architecture Map
+## Commands
 
-```mermaid
-graph TD
-    Client[Angular 21 Client - Hosted on Vercel]
-    GoAPI[Go API Server - Hosted on Render]
-    NeonDB[(Neon Postgres Database - student_fee_core schema)]
-    ExcelEng[Excelize v2 Engine]
+Run commands from the repository root unless noted.
 
-    Client -- HTTPS (JWT in HttpOnly Cookie) --> GoAPI
-    GoAPI -- pgx/v5 (ACID Transaction) --> NeonDB
-    GoAPI -- Input Data --> ExcelEng
-    ExcelEng -- Generates Stream --> GoAPI
-    GoAPI -- Binary File Stream (.xlsx) --> Client
-```
+- Backend tests: `go test ./...`
+- Backend static checks: `go vet ./...`
+- Backend formatting check: `gofmt -l cmd internal`
+- Run backend: `go run ./cmd/server`
+- Install frontend dependencies: `npm ci --prefix frontend`
+- Build frontend: `npm run build --prefix frontend`
+- Run frontend: `npm start --prefix frontend`
 
----
+There is no frontend test or lint script. Do not report either as passing.
 
-## 3. Database Schema Blueprint (`student_fee_core`)
+## Change workflow
 
-All database entities exist strictly inside the `student_fee_core` schema to isolate tenant data:
+1. Inspect the nearest `AGENTS.md`, affected contracts, and existing tests.
+2. Make the smallest coherent change through all affected layers.
+3. Add or update tests for changed behavior where a harness exists.
+4. Run narrow relevant checks, then broader checks when risk warrants them.
+5. Report commands actually run and validation that remains unavailable.
 
-```sql
-CREATE SCHEMA IF NOT EXISTS student_fee_core;
+For independent cross-stack work, Codex may use project custom agents in `.codex/agents`. Do not delegate small or tightly coupled changes.
 
--- 1. Enums
-DO $$ BEGIN
-    CREATE TYPE student_fee_core.student_status AS ENUM ('enrolled', 'inactive', 'graduated', 'suspended');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
+## Repository skills
 
--- 2. Student Table
-CREATE TABLE student_fee_core.students (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    student_id VARCHAR(50) UNIQUE NOT NULL, -- Format e.g., STU-08291
-    name VARCHAR(255) NOT NULL,
-    phone VARCHAR(20),
-    status student_fee_core.student_status DEFAULT 'enrolled' NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+Use the matching project skill for substantial work:
 
--- 2. AttendanceRecord Table
-CREATE TABLE student_fee_core.attendance_records (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    student_id UUID NOT NULL REFERENCES student_fee_core.students(id) ON DELETE CASCADE,
-    record_date DATE NOT NULL,
-    is_present BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT unique_student_date UNIQUE (student_id, record_date)
-);
+- `$change-student-fee-backend`
+- `$change-student-fee-frontend`
+- `$change-student-fee-database`
 
--- 3. FeeStatement Table (Financial Audits)
-CREATE TABLE student_fee_core.fee_statements (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    student_id UUID NOT NULL REFERENCES student_fee_core.students(id) ON DELETE CASCADE,
-    billing_start_date DATE NOT NULL,
-    billing_end_date DATE NOT NULL,
-    fee_per_session NUMERIC(10, 2) NOT NULL CHECK (fee_per_session >= 0),
-    total_days INT NOT NULL CHECK (total_days >= 0),
-    total_fee NUMERIC(10, 2) NOT NULL CHECK (total_fee >= 0),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-```
+## Security and data rules
+
+- Never commit `.env`, credentials, secret-bearing URLs, or generated student data.
+- Do not weaken cookie flags, authentication, encryption, CORS, SQL parameterization, or transaction boundaries without an explicit requirement.
+- Avoid logging credentials, JWTs, encryption keys, full phone numbers, or exported fee-statement contents.
+- Treat attendance and billing dates as dates and avoid accidental timezone shifts.

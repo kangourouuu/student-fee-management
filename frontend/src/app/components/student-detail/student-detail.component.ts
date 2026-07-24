@@ -28,10 +28,27 @@ export class StudentDetailComponent implements OnInit {
 
   calendarDays = computed(() => {
     const daysInMonth = new Date(this.year(), this.month(), 0).getDate();
+    const firstDayOfMonth = new Date(this.year(), this.month() - 1, 1).getDay();
+    // Convert JavaScript's Sunday-first index (0-6) to Monday-first (0-6).
+    const leadingEmptyDays = (firstDayOfMonth + 6) % 7;
     const map = this.attendanceService.attendanceMap();
-    const days = [];
+    const days: Array<{
+      dayNum: number | null;
+      dateStr: string;
+      isAttended: boolean;
+      isPlaceholder: boolean;
+    }> = [];
 
     const monthStr = this.month() < 10 ? `0${this.month()}` : `${this.month()}`;
+
+    for (let i = 0; i < leadingEmptyDays; i++) {
+      days.push({
+        dayNum: null,
+        dateStr: `placeholder-${this.year()}-${monthStr}-${i}`,
+        isAttended: false,
+        isPlaceholder: true
+      });
+    }
 
     for (let i = 1; i <= daysInMonth; i++) {
       const dayStr = i < 10 ? `0${i}` : `${i}`;
@@ -39,7 +56,8 @@ export class StudentDetailComponent implements OnInit {
       days.push({
         dayNum: i,
         dateStr,
-        isAttended: !!map[dateStr]
+        isAttended: !!map[dateStr],
+        isPlaceholder: false
       });
     }
 
@@ -47,7 +65,7 @@ export class StudentDetailComponent implements OnInit {
   });
 
   attendanceRate = computed(() => {
-    const total = this.calendarDays().length;
+    const total = this.calendarDays().filter(day => !day.isPlaceholder).length;
     if (total === 0) return 0;
     return Math.round((this.attendanceService.totalAttendedDays() / total) * 100);
   });

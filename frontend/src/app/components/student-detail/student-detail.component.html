@@ -80,33 +80,37 @@
     <!-- Calendar Grid -->
     <div class="clay-card calendar-card">
       <div class="weekdays-grid">
-        <div>CN</div><div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div>
+        <div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div><div>CN</div>
       </div>
 
       <div class="days-grid">
         @for (day of calendarDays(); track day.dateStr) {
-          <div 
-            [class]="day.isAttended ? 'clay-cell-inset' : 'clay-cell'"
-            class="day-cell"
-            (click)="toggleDay(day.dateStr, !day.isAttended)"
-          >
-            <div class="cell-header">
-              <span [style.font-weight]="day.isAttended ? '700' : '600'" [style.color]="day.isAttended ? '#0369a1' : '#64748b'">
-                {{ day.dayNum }}
-              </span>
-              @if (day.isAttended) {
-                <div class="attended-dot"></div>
-              }
+          @if (day.isPlaceholder) {
+            <div class="day-cell day-placeholder" aria-hidden="true"></div>
+          } @else {
+            <div
+              [class]="day.isAttended ? 'clay-cell-inset' : 'clay-cell'"
+              class="day-cell"
+              (click)="toggleDay(day.dateStr, !day.isAttended)"
+            >
+              <div class="cell-header">
+                <span [style.font-weight]="day.isAttended ? '700' : '600'" [style.color]="day.isAttended ? '#0369a1' : '#64748b'">
+                  {{ day.dayNum }}
+                </span>
+                @if (day.isAttended) {
+                  <div class="attended-dot"></div>
+                }
+              </div>
+
+              <div class="cell-status">
+                @if (day.isAttended) {
+                  <span class="status-attended">Đi học</span>
+                } @else {
+                  <span class="status-off">Nghỉ</span>
+                }
+              </div>
             </div>
-            
-            <div class="cell-status">
-              @if (day.isAttended) {
-                <span class="status-attended">Đi học</span>
-              } @else {
-                <span class="status-off">Nghỉ</span>
-              }
-            </div>
-          </div>
+          }
         }
       </div>
     </div>

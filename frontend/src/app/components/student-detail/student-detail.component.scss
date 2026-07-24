@@ -218,6 +218,11 @@
   cursor: pointer;
 }
 
+.day-placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .cell-header {
   display: flex;
   justify-content: space-between;

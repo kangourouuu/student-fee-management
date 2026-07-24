@@ -1,0 +1,4 @@
+interface:
+  display_name: "Student Fee Database"
+  short_description: "Evolve the PostgreSQL schema and migrations"
+  default_prompt: "Use $change-student-fee-database to design and verify a database change."

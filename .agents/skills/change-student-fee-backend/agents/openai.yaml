@@ -1,0 +1,4 @@
+interface:
+  display_name: "Student Fee Backend"
+  short_description: "Change and verify the Go backend safely"
+  default_prompt: "Use $change-student-fee-backend to implement and verify a backend change."
